@@ -1,0 +1,32 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    command:
+      [
+        "./main",
+        "--db-host=db",
+        "--db-port=5432",
+        "--db-user=hear",
+        "--db-password=hear",
+        "--db-name=hear",
+      ]
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=hear
+      - POSTGRES_PASSWORD=hear
+      - POSTGRES_DB=hear
+    volumes:
+      - hear_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  hear_postgres_data:
