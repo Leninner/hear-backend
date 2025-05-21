@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/leninner/hear-backend/internal/di"
 	"github.com/leninner/hear-backend/internal/shared/middleware"
-	userApp "github.com/leninner/hear-backend/internal/users/application"
 )
 
 func SetupServer(container *di.Container) {
@@ -23,12 +22,7 @@ func SetupServer(container *di.Container) {
 		})
 	})
 
-	app.Get("/docs/openapi.yaml", func(c *fiber.Ctx) error {
-		return c.SendFile("docs/openapi.yaml")
-	})
-
 	container.DocsHandler.Register(app)
-	userApp.SetupRoutes(app, container.UserHandler)
 
 	middleware.EndpointsLogger(app)
 }

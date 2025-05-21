@@ -12,8 +12,13 @@ func NewDocsHandler() *DocsHandler {
 }
 
 func (h *DocsHandler) Register(app *fiber.App) {
-	app.Get("/swagger/*", swagger.New(swagger.Config{
+	app.Get("/docs/openapi.yaml", func(c *fiber.Ctx) error {
+		return c.SendFile("docs/openapi.yaml")
+	})
+
+	app.Get("/documentation/*", swagger.New(swagger.Config{
 		URL:         "/docs/openapi.yaml",
 		DeepLinking: true,
+		Title:       "Hear API",
 	}))
 }

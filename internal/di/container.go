@@ -20,9 +20,13 @@ func NewContainer(db *sql.DB) *Container {
 		AppName: "Hear Backend",
 	})
 
+	api := app.Group("/api")
+
 	userRepository := userRepo.NewPostgresRepository(db)
 	userUseCase := userApp.NewUseCase(userRepository)
 	userHandler := userApp.NewHandler(userUseCase)
+	userApp.SetupRoutes(api, userHandler)
+
 	docsHandler := docsApp.NewDocsHandler()
 	docsHandler.Register(app)
 

@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/leninner/hear-backend/internal/shared/response"
 	"github.com/leninner/hear-backend/internal/users/domain"
 )
 
@@ -19,35 +20,35 @@ func NewHandler(useCase *UseCase) *Handler {
 func (h *Handler) Create(c *fiber.Ctx) error {
 	user := new(domain.User)
 	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return response.Error(c, fiber.StatusBadRequest, err.Error())
 	}
 
 	if err := h.useCase.CreateUser(user); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return response.Error(c, fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(user)
+	return response.Success(c, "User created successfully", user)
 }
 
 func (h *Handler) GetByID(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid ID"})
+		return response.Error(c, fiber.StatusBadRequest, "Invalid ID")
 	}
 
 	user, err := h.useCase.GetUser(id)
 	if err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		return response.Error(c, fiber.StatusNotFound, "User not found")
 	}
 
-	return c.JSON(user)
+	return response.Success(c, "User retrieved successfully", user)
 }
 
 func (h *Handler) GetAll(c *fiber.Ctx) error {
 	users, err := h.useCase.GetAllUsers()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return response.Error(c, fiber.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(users)
+	return response.Success(c, "Users retrieved successfully", users)
 } 
