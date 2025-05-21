@@ -10,14 +10,20 @@ import (
 )
 
 func main() {
-	sqlDB, err := sql.Open("postgres", "postgres://hear:hear@localhost:5432/hear?sslmode=disable")
-	if err != nil {
-		log.Fatal(err)
-	}
+	sqlDB := setupDB()
 	defer sqlDB.Close()
 
 	container := di.NewContainer(sqlDB)
 	server.SetupServer(container)
 
 	log.Fatal(container.App.Listen(":8080"))
+}
+
+func setupDB() *sql.DB {
+	sqlDB, err := sql.Open("postgres", "postgres://hear:hear@localhost:5432/hear?sslmode=disable")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return sqlDB
 }

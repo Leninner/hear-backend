@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	docsApp "github.com/leninner/hear-backend/internal/shared/handler"
+	users "github.com/leninner/hear-backend/internal/users"
 	userApp "github.com/leninner/hear-backend/internal/users/application"
-	userRepo "github.com/leninner/hear-backend/internal/users/infrastructure"
 )
 
 type Container struct {
@@ -19,17 +19,15 @@ func NewContainer(db *sql.DB) *Container {
 	app := fiber.New(fiber.Config{
 		AppName: "Hear Backend",
 	})
-
-	api := app.Group("/api")
-
-	userRepository := userRepo.NewPostgresRepository(db)
-	userUseCase := userApp.NewUseCase(userRepository)
-	userHandler := userApp.NewHandler(userUseCase)
-	userApp.SetupRoutes(api, userHandler)
-
+	
+	// SHARED MODULES
 	docsHandler := docsApp.NewDocsHandler()
 	docsHandler.Register(app)
 
+	api := app.Group("/api")
+	
+	// APP MODULES
+	userHandler := users.Setup(api, db)
 
 	return &Container{
 		App:            app,
