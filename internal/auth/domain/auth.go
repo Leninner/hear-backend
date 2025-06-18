@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -33,6 +35,29 @@ type LoginDTO struct {
 	Password string `json:"password"`
 }
 
+func (dto *LoginDTO) Validate() error {
+	validationErrors := NewValidationErrors()
+
+	if strings.TrimSpace(dto.Email) == "" {
+		validationErrors.AddError(ErrEmailRequired)
+	} else {
+		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+		if !emailRegex.MatchString(dto.Email) {
+			validationErrors.AddError(ErrEmailInvalid)
+		}
+	}
+
+	if strings.TrimSpace(dto.Password) == "" {
+		validationErrors.AddError(ErrPasswordRequired)
+	}
+
+	if validationErrors.HasErrors() {
+		return validationErrors
+	}
+
+	return nil
+}
+
 type RegisterDTO struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
@@ -41,8 +66,65 @@ type RegisterDTO struct {
 	Role      string `json:"role"`
 }
 
+func (dto *RegisterDTO) Validate() error {
+	validationErrors := NewValidationErrors()
+
+	if strings.TrimSpace(dto.Email) == "" {
+		validationErrors.AddError(ErrEmailRequired)
+	} else {
+		emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+		if !emailRegex.MatchString(dto.Email) {
+			validationErrors.AddError(ErrEmailInvalid)
+		}
+	}
+
+	if strings.TrimSpace(dto.Password) == "" {
+		validationErrors.AddError(ErrPasswordRequired)
+	} else if len(dto.Password) < 8 {
+		validationErrors.AddError(ErrPasswordTooShort)
+	}
+
+	if strings.TrimSpace(dto.FirstName) == "" {
+		validationErrors.AddError(ErrFirstNameRequired)
+	}
+
+	if strings.TrimSpace(dto.LastName) == "" {
+		validationErrors.AddError(ErrLastNameRequired)
+	}
+
+	if dto.Role == "" {
+		validationErrors.AddError(ErrRoleRequired)
+	} else {
+		switch dto.Role {
+		case "admin", "teacher", "student":
+		default:
+			validationErrors.AddError(ErrRoleInvalid)
+		}
+	}
+
+	if validationErrors.HasErrors() {
+		return validationErrors
+	}
+
+	return nil
+}
+
 type RefreshTokenDTO struct {
 	RefreshToken string `json:"refreshToken"`
+}
+
+func (dto *RefreshTokenDTO) Validate() error {
+	validationErrors := NewValidationErrors()
+
+	if strings.TrimSpace(dto.RefreshToken) == "" {
+		validationErrors.AddError(ErrRefreshTokenRequired)
+	}
+
+	if validationErrors.HasErrors() {
+		return validationErrors
+	}
+
+	return nil
 }
 
 type AuthResponse struct {

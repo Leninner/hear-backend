@@ -28,6 +28,10 @@ func NewUseCase(userRepository userDomain.Repository, tokenRepository domain.Tok
 }
 
 func (uc *UseCase) Login(dto *domain.LoginDTO) (*domain.AuthResponse, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
 	user, err := uc.userRepository.GetByEmail(dto.Email)
 	if err != nil {
 		return nil, domain.ErrInvalidCredentials
@@ -49,6 +53,10 @@ func (uc *UseCase) Login(dto *domain.LoginDTO) (*domain.AuthResponse, error) {
 }
 
 func (uc *UseCase) Register(dto *domain.RegisterDTO) (*domain.AuthResponse, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
 	existingUser, err := uc.userRepository.GetByEmail(dto.Email)
 	if err == nil && existingUser != nil {
 		return nil, domain.ErrEmailExists
@@ -76,6 +84,10 @@ func (uc *UseCase) Register(dto *domain.RegisterDTO) (*domain.AuthResponse, erro
 }
 
 func (uc *UseCase) RefreshToken(dto *domain.RefreshTokenDTO) (*domain.TokenPair, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
 	claims, err := uc.validateToken(dto.RefreshToken, domain.RefreshToken)
 	if err != nil {
 		return nil, err

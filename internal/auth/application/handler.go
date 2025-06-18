@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/leninner/hear-backend/internal/auth/domain"
 	"github.com/leninner/hear-backend/internal/shared/response"
@@ -21,7 +23,7 @@ func (h *Handler) GetUseCase() *UseCase {
 	return h.useCase
 }
 
-func (h *Handler) Login(c *fiber.Ctx) error {
+func (h *Handler) Login(c *fiber.Ctx) error {	
 	loginDTO := new(domain.LoginDTO)
 	if err := c.BodyParser(loginDTO); err != nil {
 		return response.Error(c, fiber.StatusBadRequest, "Invalid request body format")
@@ -56,6 +58,8 @@ func (h *Handler) Register(c *fiber.Ctx) error {
 	}
 
 	authResponse, err := h.useCase.Register(registerDTO)
+	fmt.Println(err)
+	
 	if err != nil {
 		switch e := err.(type) {
 		case *userDomain.ValidationErrors:
