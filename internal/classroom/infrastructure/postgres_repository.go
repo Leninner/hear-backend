@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"errors"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -32,8 +31,20 @@ func (r *PostgresRepository) Create(classroom *domain.Classroom) error {
 		LocationLng: strconv.FormatFloat(classroom.LocationLng, 'f', -1, 64),
 	}
 	
-	_, err := r.db.CreateClassroom(ctx, params)
-	return err
+	result, err := r.db.CreateClassroom(ctx, params)
+	if err != nil {
+		return domain.NewInternalError("failed to create classroom in database", err)
+	}
+
+	classroom.ID = result.ID
+	if result.CreatedAt.Valid {
+		classroom.CreatedAt = result.CreatedAt.Time
+	}
+	if result.UpdatedAt.Valid {
+		classroom.UpdatedAt = result.UpdatedAt.Time
+	}
+	
+	return nil
 }
 
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Classroom, error) {
@@ -41,7 +52,18 @@ func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Classroom, error) {
 	
 	dbClassroom, err := r.db.GetClassroomByID(ctx, id)
 	if err != nil {
-		return nil, errors.New("classroom not found")
+		return nil, domain.ErrClassroomNotFound
+	}
+	
+	return r.mapToDomain(&dbClassroom), nil
+}
+
+func (r *PostgresRepository) GetByName(name string) (*domain.Classroom, error) {
+	ctx := context.Background()
+	
+	dbClassroom, err := r.db.GetClassroomByName(ctx, name)
+	if err != nil {
+		return nil, domain.ErrClassroomNotFound
 	}
 	
 	return r.mapToDomain(&dbClassroom), nil
@@ -50,9 +72,12 @@ func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Classroom, error) {
 func (r *PostgresRepository) GetAll() ([]*domain.Classroom, error) {
 	ctx := context.Background()
 	
-	dbClassrooms, err := r.db.GetClassroomsByBuilding(ctx, "")
+	dbClassrooms, err := r.db.GetAll(ctx, db.GetAllParams{
+		Limit:  100,
+		Offset: 0,
+	})
 	if err != nil {
-		return nil, err
+		return nil, domain.NewInternalError("failed to retrieve classrooms from database", err)
 	}
 	
 	var classrooms []*domain.Classroom
@@ -74,7 +99,7 @@ func (r *PostgresRepository) GetByLocation(lat, lng, radius float64) ([]*domain.
 	
 	dbClassrooms, err := r.db.GetNearbyClassrooms(ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewInternalError("failed to retrieve classrooms by location from database", err)
 	}
 	
 	var classrooms []*domain.Classroom
@@ -116,7 +141,11 @@ func (r *PostgresRepository) Update(classroom *domain.Classroom) error {
 	}
 	
 	_, err := r.db.UpdateClassroom(ctx, params)
-	return err
+	if err != nil {
+		return domain.NewInternalError("failed to update classroom in database", err)
+	}
+	
+	return nil
 }
 
 func (r *PostgresRepository) Delete(id uuid.UUID) error {
@@ -124,7 +153,7 @@ func (r *PostgresRepository) Delete(id uuid.UUID) error {
 	
 	err := r.db.DeleteClassroom(ctx, id)
 	if err != nil {
-		return errors.New("classroom not found")
+		return domain.ErrClassroomNotFound
 	}
 	
 	return nil

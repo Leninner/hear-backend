@@ -42,11 +42,17 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.createCourseSectionStmt, err = db.PrepareContext(ctx, createCourseSection); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateCourseSection: %w", err)
 	}
+	if q.createFacultyStmt, err = db.PrepareContext(ctx, createFaculty); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateFaculty: %w", err)
+	}
 	if q.createQRCodeStmt, err = db.PrepareContext(ctx, createQRCode); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateQRCode: %w", err)
 	}
 	if q.createRefreshTokenStmt, err = db.PrepareContext(ctx, createRefreshToken); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateRefreshToken: %w", err)
+	}
+	if q.createUniversityStmt, err = db.PrepareContext(ctx, createUniversity); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUniversity: %w", err)
 	}
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
@@ -63,17 +69,26 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteCourseSectionStmt, err = db.PrepareContext(ctx, deleteCourseSection); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteCourseSection: %w", err)
 	}
+	if q.deleteFacultyStmt, err = db.PrepareContext(ctx, deleteFaculty); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteFaculty: %w", err)
+	}
 	if q.deleteQRCodeStmt, err = db.PrepareContext(ctx, deleteQRCode); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteQRCode: %w", err)
 	}
 	if q.deleteRefreshTokenStmt, err = db.PrepareContext(ctx, deleteRefreshToken); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteRefreshToken: %w", err)
 	}
+	if q.deleteUniversityStmt, err = db.PrepareContext(ctx, deleteUniversity); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUniversity: %w", err)
+	}
 	if q.deleteUserStmt, err = db.PrepareContext(ctx, deleteUser); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUser: %w", err)
 	}
 	if q.deleteUserRefreshTokensStmt, err = db.PrepareContext(ctx, deleteUserRefreshTokens); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUserRefreshTokens: %w", err)
+	}
+	if q.getAllStmt, err = db.PrepareContext(ctx, getAll); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAll: %w", err)
 	}
 	if q.getAttendanceByClassScheduleIDStmt, err = db.PrepareContext(ctx, getAttendanceByClassScheduleID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAttendanceByClassScheduleID: %w", err)
@@ -96,6 +111,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getClassroomByIDStmt, err = db.PrepareContext(ctx, getClassroomByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetClassroomByID: %w", err)
 	}
+	if q.getClassroomByNameStmt, err = db.PrepareContext(ctx, getClassroomByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetClassroomByName: %w", err)
+	}
 	if q.getClassroomsByBuildingStmt, err = db.PrepareContext(ctx, getClassroomsByBuilding); err != nil {
 		return nil, fmt.Errorf("error preparing query GetClassroomsByBuilding: %w", err)
 	}
@@ -117,6 +135,15 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getCoursesByFacultyIDStmt, err = db.PrepareContext(ctx, getCoursesByFacultyID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCoursesByFacultyID: %w", err)
 	}
+	if q.getFacultiesByUniversityIDStmt, err = db.PrepareContext(ctx, getFacultiesByUniversityID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetFacultiesByUniversityID: %w", err)
+	}
+	if q.getFacultyByIDStmt, err = db.PrepareContext(ctx, getFacultyByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetFacultyByID: %w", err)
+	}
+	if q.getFacultyByNameStmt, err = db.PrepareContext(ctx, getFacultyByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetFacultyByName: %w", err)
+	}
 	if q.getNearbyClassroomsStmt, err = db.PrepareContext(ctx, getNearbyClassrooms); err != nil {
 		return nil, fmt.Errorf("error preparing query GetNearbyClassrooms: %w", err)
 	}
@@ -129,11 +156,23 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getRefreshTokenStmt, err = db.PrepareContext(ctx, getRefreshToken); err != nil {
 		return nil, fmt.Errorf("error preparing query GetRefreshToken: %w", err)
 	}
+	if q.getUniversityByIDStmt, err = db.PrepareContext(ctx, getUniversityByID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUniversityByID: %w", err)
+	}
+	if q.getUniversityByNameStmt, err = db.PrepareContext(ctx, getUniversityByName); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUniversityByName: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
+	}
+	if q.listFacultiesStmt, err = db.PrepareContext(ctx, listFaculties); err != nil {
+		return nil, fmt.Errorf("error preparing query ListFaculties: %w", err)
+	}
+	if q.listUniversitiesStmt, err = db.PrepareContext(ctx, listUniversities); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUniversities: %w", err)
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
@@ -152,6 +191,12 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.updateCourseSectionStmt, err = db.PrepareContext(ctx, updateCourseSection); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateCourseSection: %w", err)
+	}
+	if q.updateFacultyStmt, err = db.PrepareContext(ctx, updateFaculty); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateFaculty: %w", err)
+	}
+	if q.updateUniversityStmt, err = db.PrepareContext(ctx, updateUniversity); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUniversity: %w", err)
 	}
 	if q.updateUserStmt, err = db.PrepareContext(ctx, updateUser); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateUser: %w", err)
@@ -191,6 +236,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing createCourseSectionStmt: %w", cerr)
 		}
 	}
+	if q.createFacultyStmt != nil {
+		if cerr := q.createFacultyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createFacultyStmt: %w", cerr)
+		}
+	}
 	if q.createQRCodeStmt != nil {
 		if cerr := q.createQRCodeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createQRCodeStmt: %w", cerr)
@@ -199,6 +249,11 @@ func (q *Queries) Close() error {
 	if q.createRefreshTokenStmt != nil {
 		if cerr := q.createRefreshTokenStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createRefreshTokenStmt: %w", cerr)
+		}
+	}
+	if q.createUniversityStmt != nil {
+		if cerr := q.createUniversityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUniversityStmt: %w", cerr)
 		}
 	}
 	if q.createUserStmt != nil {
@@ -226,6 +281,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteCourseSectionStmt: %w", cerr)
 		}
 	}
+	if q.deleteFacultyStmt != nil {
+		if cerr := q.deleteFacultyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteFacultyStmt: %w", cerr)
+		}
+	}
 	if q.deleteQRCodeStmt != nil {
 		if cerr := q.deleteQRCodeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteQRCodeStmt: %w", cerr)
@@ -236,6 +296,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteRefreshTokenStmt: %w", cerr)
 		}
 	}
+	if q.deleteUniversityStmt != nil {
+		if cerr := q.deleteUniversityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUniversityStmt: %w", cerr)
+		}
+	}
 	if q.deleteUserStmt != nil {
 		if cerr := q.deleteUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteUserStmt: %w", cerr)
@@ -244,6 +309,11 @@ func (q *Queries) Close() error {
 	if q.deleteUserRefreshTokensStmt != nil {
 		if cerr := q.deleteUserRefreshTokensStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteUserRefreshTokensStmt: %w", cerr)
+		}
+	}
+	if q.getAllStmt != nil {
+		if cerr := q.getAllStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllStmt: %w", cerr)
 		}
 	}
 	if q.getAttendanceByClassScheduleIDStmt != nil {
@@ -281,6 +351,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getClassroomByIDStmt: %w", cerr)
 		}
 	}
+	if q.getClassroomByNameStmt != nil {
+		if cerr := q.getClassroomByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getClassroomByNameStmt: %w", cerr)
+		}
+	}
 	if q.getClassroomsByBuildingStmt != nil {
 		if cerr := q.getClassroomsByBuildingStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getClassroomsByBuildingStmt: %w", cerr)
@@ -316,6 +391,21 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getCoursesByFacultyIDStmt: %w", cerr)
 		}
 	}
+	if q.getFacultiesByUniversityIDStmt != nil {
+		if cerr := q.getFacultiesByUniversityIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getFacultiesByUniversityIDStmt: %w", cerr)
+		}
+	}
+	if q.getFacultyByIDStmt != nil {
+		if cerr := q.getFacultyByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getFacultyByIDStmt: %w", cerr)
+		}
+	}
+	if q.getFacultyByNameStmt != nil {
+		if cerr := q.getFacultyByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getFacultyByNameStmt: %w", cerr)
+		}
+	}
 	if q.getNearbyClassroomsStmt != nil {
 		if cerr := q.getNearbyClassroomsStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getNearbyClassroomsStmt: %w", cerr)
@@ -336,6 +426,16 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getRefreshTokenStmt: %w", cerr)
 		}
 	}
+	if q.getUniversityByIDStmt != nil {
+		if cerr := q.getUniversityByIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUniversityByIDStmt: %w", cerr)
+		}
+	}
+	if q.getUniversityByNameStmt != nil {
+		if cerr := q.getUniversityByNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUniversityByNameStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -344,6 +444,16 @@ func (q *Queries) Close() error {
 	if q.getUserByIDStmt != nil {
 		if cerr := q.getUserByIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
+		}
+	}
+	if q.listFacultiesStmt != nil {
+		if cerr := q.listFacultiesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listFacultiesStmt: %w", cerr)
+		}
+	}
+	if q.listUniversitiesStmt != nil {
+		if cerr := q.listUniversitiesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUniversitiesStmt: %w", cerr)
 		}
 	}
 	if q.listUsersStmt != nil {
@@ -374,6 +484,16 @@ func (q *Queries) Close() error {
 	if q.updateCourseSectionStmt != nil {
 		if cerr := q.updateCourseSectionStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing updateCourseSectionStmt: %w", cerr)
+		}
+	}
+	if q.updateFacultyStmt != nil {
+		if cerr := q.updateFacultyStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateFacultyStmt: %w", cerr)
+		}
+	}
+	if q.updateUniversityStmt != nil {
+		if cerr := q.updateUniversityStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUniversityStmt: %w", cerr)
 		}
 	}
 	if q.updateUserStmt != nil {
@@ -426,17 +546,22 @@ type Queries struct {
 	createClassroomStmt                     *sql.Stmt
 	createCourseStmt                        *sql.Stmt
 	createCourseSectionStmt                 *sql.Stmt
+	createFacultyStmt                       *sql.Stmt
 	createQRCodeStmt                        *sql.Stmt
 	createRefreshTokenStmt                  *sql.Stmt
+	createUniversityStmt                    *sql.Stmt
 	createUserStmt                          *sql.Stmt
 	deleteClassScheduleStmt                 *sql.Stmt
 	deleteClassroomStmt                     *sql.Stmt
 	deleteCourseStmt                        *sql.Stmt
 	deleteCourseSectionStmt                 *sql.Stmt
+	deleteFacultyStmt                       *sql.Stmt
 	deleteQRCodeStmt                        *sql.Stmt
 	deleteRefreshTokenStmt                  *sql.Stmt
+	deleteUniversityStmt                    *sql.Stmt
 	deleteUserStmt                          *sql.Stmt
 	deleteUserRefreshTokensStmt             *sql.Stmt
+	getAllStmt                              *sql.Stmt
 	getAttendanceByClassScheduleIDStmt      *sql.Stmt
 	getAttendanceByIDStmt                   *sql.Stmt
 	getAttendanceByStudentIDStmt            *sql.Stmt
@@ -444,6 +569,7 @@ type Queries struct {
 	getClassSchedulesByClassroomAndTimeStmt *sql.Stmt
 	getClassSchedulesByCourseIDStmt         *sql.Stmt
 	getClassroomByIDStmt                    *sql.Stmt
+	getClassroomByNameStmt                  *sql.Stmt
 	getClassroomsByBuildingStmt             *sql.Stmt
 	getClassroomsByCapacityStmt             *sql.Stmt
 	getCourseByIDStmt                       *sql.Stmt
@@ -451,18 +577,27 @@ type Queries struct {
 	getCourseSectionsByCourseIDStmt         *sql.Stmt
 	getCourseSectionsByTeacherIDStmt        *sql.Stmt
 	getCoursesByFacultyIDStmt               *sql.Stmt
+	getFacultiesByUniversityIDStmt          *sql.Stmt
+	getFacultyByIDStmt                      *sql.Stmt
+	getFacultyByNameStmt                    *sql.Stmt
 	getNearbyClassroomsStmt                 *sql.Stmt
 	getQRCodeByCodeStmt                     *sql.Stmt
 	getQRCodesByCourseIDStmt                *sql.Stmt
 	getRefreshTokenStmt                     *sql.Stmt
+	getUniversityByIDStmt                   *sql.Stmt
+	getUniversityByNameStmt                 *sql.Stmt
 	getUserByEmailStmt                      *sql.Stmt
 	getUserByIDStmt                         *sql.Stmt
+	listFacultiesStmt                       *sql.Stmt
+	listUniversitiesStmt                    *sql.Stmt
 	listUsersStmt                           *sql.Stmt
 	updateAttendanceStmt                    *sql.Stmt
 	updateClassScheduleStmt                 *sql.Stmt
 	updateClassroomStmt                     *sql.Stmt
 	updateCourseStmt                        *sql.Stmt
 	updateCourseSectionStmt                 *sql.Stmt
+	updateFacultyStmt                       *sql.Stmt
+	updateUniversityStmt                    *sql.Stmt
 	updateUserStmt                          *sql.Stmt
 }
 
@@ -476,17 +611,22 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		createClassroomStmt:                     q.createClassroomStmt,
 		createCourseStmt:                        q.createCourseStmt,
 		createCourseSectionStmt:                 q.createCourseSectionStmt,
+		createFacultyStmt:                       q.createFacultyStmt,
 		createQRCodeStmt:                        q.createQRCodeStmt,
 		createRefreshTokenStmt:                  q.createRefreshTokenStmt,
+		createUniversityStmt:                    q.createUniversityStmt,
 		createUserStmt:                          q.createUserStmt,
 		deleteClassScheduleStmt:                 q.deleteClassScheduleStmt,
 		deleteClassroomStmt:                     q.deleteClassroomStmt,
 		deleteCourseStmt:                        q.deleteCourseStmt,
 		deleteCourseSectionStmt:                 q.deleteCourseSectionStmt,
+		deleteFacultyStmt:                       q.deleteFacultyStmt,
 		deleteQRCodeStmt:                        q.deleteQRCodeStmt,
 		deleteRefreshTokenStmt:                  q.deleteRefreshTokenStmt,
+		deleteUniversityStmt:                    q.deleteUniversityStmt,
 		deleteUserStmt:                          q.deleteUserStmt,
 		deleteUserRefreshTokensStmt:             q.deleteUserRefreshTokensStmt,
+		getAllStmt:                              q.getAllStmt,
 		getAttendanceByClassScheduleIDStmt:      q.getAttendanceByClassScheduleIDStmt,
 		getAttendanceByIDStmt:                   q.getAttendanceByIDStmt,
 		getAttendanceByStudentIDStmt:            q.getAttendanceByStudentIDStmt,
@@ -494,6 +634,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getClassSchedulesByClassroomAndTimeStmt: q.getClassSchedulesByClassroomAndTimeStmt,
 		getClassSchedulesByCourseIDStmt:         q.getClassSchedulesByCourseIDStmt,
 		getClassroomByIDStmt:                    q.getClassroomByIDStmt,
+		getClassroomByNameStmt:                  q.getClassroomByNameStmt,
 		getClassroomsByBuildingStmt:             q.getClassroomsByBuildingStmt,
 		getClassroomsByCapacityStmt:             q.getClassroomsByCapacityStmt,
 		getCourseByIDStmt:                       q.getCourseByIDStmt,
@@ -501,18 +642,27 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getCourseSectionsByCourseIDStmt:         q.getCourseSectionsByCourseIDStmt,
 		getCourseSectionsByTeacherIDStmt:        q.getCourseSectionsByTeacherIDStmt,
 		getCoursesByFacultyIDStmt:               q.getCoursesByFacultyIDStmt,
+		getFacultiesByUniversityIDStmt:          q.getFacultiesByUniversityIDStmt,
+		getFacultyByIDStmt:                      q.getFacultyByIDStmt,
+		getFacultyByNameStmt:                    q.getFacultyByNameStmt,
 		getNearbyClassroomsStmt:                 q.getNearbyClassroomsStmt,
 		getQRCodeByCodeStmt:                     q.getQRCodeByCodeStmt,
 		getQRCodesByCourseIDStmt:                q.getQRCodesByCourseIDStmt,
 		getRefreshTokenStmt:                     q.getRefreshTokenStmt,
+		getUniversityByIDStmt:                   q.getUniversityByIDStmt,
+		getUniversityByNameStmt:                 q.getUniversityByNameStmt,
 		getUserByEmailStmt:                      q.getUserByEmailStmt,
 		getUserByIDStmt:                         q.getUserByIDStmt,
+		listFacultiesStmt:                       q.listFacultiesStmt,
+		listUniversitiesStmt:                    q.listUniversitiesStmt,
 		listUsersStmt:                           q.listUsersStmt,
 		updateAttendanceStmt:                    q.updateAttendanceStmt,
 		updateClassScheduleStmt:                 q.updateClassScheduleStmt,
 		updateClassroomStmt:                     q.updateClassroomStmt,
 		updateCourseStmt:                        q.updateCourseStmt,
 		updateCourseSectionStmt:                 q.updateCourseSectionStmt,
+		updateFacultyStmt:                       q.updateFacultyStmt,
+		updateUniversityStmt:                    q.updateUniversityStmt,
 		updateUserStmt:                          q.updateUserStmt,
 	}
 }

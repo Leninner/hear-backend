@@ -68,6 +68,50 @@ func (q *Queries) DeleteClassroom(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAll = `-- name: GetAll :many
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type GetAllParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, error) {
+	rows, err := q.query(ctx, q.getAllStmt, getAll, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Classroom{}
+	for rows.Next() {
+		var i Classroom
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Building,
+			&i.Floor,
+			&i.Capacity,
+			&i.LocationLat,
+			&i.LocationLng,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getClassroomByID = `-- name: GetClassroomByID :one
 SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
 WHERE id = $1 LIMIT 1
@@ -75,6 +119,28 @@ WHERE id = $1 LIMIT 1
 
 func (q *Queries) GetClassroomByID(ctx context.Context, id uuid.UUID) (Classroom, error) {
 	row := q.queryRow(ctx, q.getClassroomByIDStmt, getClassroomByID, id)
+	var i Classroom
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Building,
+		&i.Floor,
+		&i.Capacity,
+		&i.LocationLat,
+		&i.LocationLng,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getClassroomByName = `-- name: GetClassroomByName :one
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+WHERE name = $1 LIMIT 1
+`
+
+func (q *Queries) GetClassroomByName(ctx context.Context, name string) (Classroom, error) {
+	row := q.queryRow(ctx, q.getClassroomByNameStmt, getClassroomByName, name)
 	var i Classroom
 	err := row.Scan(
 		&i.ID,

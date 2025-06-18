@@ -14,6 +14,10 @@ INSERT INTO classrooms (
 SELECT * FROM classrooms
 WHERE id = $1 LIMIT 1;
 
+-- name: GetClassroomByName :one
+SELECT * FROM classrooms
+WHERE name = $1 LIMIT 1;
+
 -- name: GetClassroomsByBuilding :many
 SELECT * FROM classrooms
 WHERE building = $1;
@@ -21,6 +25,11 @@ WHERE building = $1;
 -- name: GetClassroomsByCapacity :many
 SELECT * FROM classrooms
 WHERE capacity >= $1;
+
+-- name: GetAll :many
+SELECT * FROM classrooms
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
 
 -- name: GetNearbyClassrooms :many
 SELECT *,

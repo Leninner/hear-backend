@@ -33,9 +33,14 @@ func NewClassroom(name, building string, floor, capacity int, locationLat, locat
 	}
 }
 
+func (c *Classroom) FullName() string {
+	return c.Building + " - " + c.Name
+}
+
 type Repository interface {
 	Create(classroom *Classroom) error
 	GetByID(id uuid.UUID) (*Classroom, error)
+	GetByName(name string) (*Classroom, error)
 	GetAll() ([]*Classroom, error)
 	GetByLocation(lat, lng float64, radius float64) ([]*Classroom, error)
 	Update(classroom *Classroom) error
