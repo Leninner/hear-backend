@@ -11,11 +11,44 @@ import (
 )
 
 type Querier interface {
+	CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error)
+	CreateClassSchedule(ctx context.Context, arg CreateClassScheduleParams) (ClassSchedule, error)
+	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
+	CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error)
+	CreateCourseSection(ctx context.Context, arg CreateCourseSectionParams) (CourseSection, error)
+	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteClassSchedule(ctx context.Context, id uuid.UUID) error
+	DeleteClassroom(ctx context.Context, id uuid.UUID) error
+	DeleteCourse(ctx context.Context, id uuid.UUID) error
+	DeleteCourseSection(ctx context.Context, id uuid.UUID) error
+	DeleteQRCode(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	GetAttendanceByClassScheduleID(ctx context.Context, arg GetAttendanceByClassScheduleIDParams) ([]Attendance, error)
+	GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendance, error)
+	GetAttendanceByStudentID(ctx context.Context, arg GetAttendanceByStudentIDParams) ([]Attendance, error)
+	GetClassScheduleByID(ctx context.Context, id uuid.UUID) (ClassSchedule, error)
+	GetClassSchedulesByClassroomAndTime(ctx context.Context, arg GetClassSchedulesByClassroomAndTimeParams) ([]ClassSchedule, error)
+	GetClassSchedulesByCourseID(ctx context.Context, courseID uuid.UUID) ([]ClassSchedule, error)
+	GetClassroomByID(ctx context.Context, id uuid.UUID) (Classroom, error)
+	GetClassroomsByBuilding(ctx context.Context, building string) ([]Classroom, error)
+	GetClassroomsByCapacity(ctx context.Context, capacity int32) ([]Classroom, error)
+	GetCourseByID(ctx context.Context, id uuid.UUID) (Course, error)
+	GetCourseSectionByID(ctx context.Context, id uuid.UUID) (CourseSection, error)
+	GetCourseSectionsByCourseID(ctx context.Context, courseID uuid.UUID) ([]CourseSection, error)
+	GetCourseSectionsByTeacherID(ctx context.Context, teacherID uuid.UUID) ([]CourseSection, error)
+	GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID) ([]Course, error)
+	GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroomsParams) ([]GetNearbyClassroomsRow, error)
+	GetQRCodeByCode(ctx context.Context, code string) (QrCode, error)
+	GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) ([]QrCode, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)
+	UpdateAttendance(ctx context.Context, arg UpdateAttendanceParams) (Attendance, error)
+	UpdateClassSchedule(ctx context.Context, arg UpdateClassScheduleParams) (ClassSchedule, error)
+	UpdateClassroom(ctx context.Context, arg UpdateClassroomParams) (Classroom, error)
+	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
+	UpdateCourseSection(ctx context.Context, arg UpdateCourseSectionParams) (CourseSection, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

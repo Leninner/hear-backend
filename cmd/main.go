@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 
 	"github.com/leninner/hear-backend/internal/di"
@@ -20,8 +22,22 @@ func main() {
 }
 
 func setupDB() *sql.DB {
-	sqlDB, err := sql.Open("postgres", "postgres://hear:hear@localhost:5432/hear?sslmode=disable")
+	dbHost := flag.String("db-host", "localhost", "Database host")
+	dbPort := flag.String("db-port", "5432", "Database port")
+	dbUser := flag.String("db-user", "hear", "Database user")
+	dbPassword := flag.String("db-password", "hear", "Database password")
+	dbName := flag.String("db-name", "hear", "Database name")
+	flag.Parse()
+
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		*dbUser, *dbPassword, *dbHost, *dbPort, *dbName)
+
+	sqlDB, err := sql.Open("postgres", connStr)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
 		log.Fatal(err)
 	}
 

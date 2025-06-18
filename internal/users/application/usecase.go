@@ -15,18 +15,71 @@ func NewUseCase(repository domain.Repository) *UseCase {
 	}
 }
 
-func (uc *UseCase) CreateUser(user *domain.User) error {
-	return uc.repository.Create(user)
+func (uc *UseCase) CreateUser(dto *domain.CreateUserDTO) (*domain.User, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
+	existingUser, err := uc.repository.GetByEmail(dto.Email)
+	if err == nil && existingUser != nil {
+		return nil, domain.ErrEmailExists
+	}
+
+	user := domain.NewUser(dto.Email, dto.Password, dto.FirstName, dto.LastName, dto.Role)
+	if err := uc.repository.Create(user); err != nil {
+		return nil, domain.NewInternalError("failed to create user in database", err)
+	}
+
+	return user, nil
+}
+
+func (uc *UseCase) UpdateUser(id uuid.UUID, dto *domain.UpdateUserDTO) error {
+	if err := dto.Validate(); err != nil {
+		return err
+	}
+
+	user, err := uc.repository.GetByID(id)
+	if err != nil {
+		return domain.ErrUserNotFound
+	}
+
+	if dto.FirstName != "" {
+		user.FirstName = dto.FirstName
+	}
+	if dto.LastName != "" {
+		user.LastName = dto.LastName
+	}
+	if dto.Role != "" {
+		user.Role = dto.Role
+	}
+
+	if err := uc.repository.Update(user); err != nil {
+		return domain.NewInternalError("failed to update user in database", err)
+	}
+
+	return nil
 }
 
 func (uc *UseCase) GetUser(id uuid.UUID) (*domain.User, error) {
-	return uc.repository.GetByID(id)
+	user, err := uc.repository.GetByID(id)
+	if err != nil {
+		return nil, domain.ErrUserNotFound
+	}
+	return user, nil
 }
 
 func (uc *UseCase) GetAllUsers() ([]*domain.User, error) {
-	return uc.repository.GetAll()
+	users, err := uc.repository.GetAll()
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve users from database", err)
+	}
+	return users, nil
 }
 
 func (uc *UseCase) GetUserByEmail(email string) (*domain.User, error) {
-	return uc.repository.GetByEmail(email)
+	user, err := uc.repository.GetByEmail(email)
+	if err != nil {
+		return nil, domain.ErrUserNotFound
+	}
+	return user, nil
 } 

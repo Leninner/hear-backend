@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
@@ -13,87 +12,149 @@ type PostgresRepository struct {
 	queries *db.Queries
 }
 
-func NewPostgresRepository(sqlDB *sql.DB) *PostgresRepository {
+func NewPostgresRepository(queries *db.Queries) *PostgresRepository {
 	return &PostgresRepository{
-		queries: db.New(sqlDB),
+		queries: queries,
 	}
 }
 
 func (r *PostgresRepository) Create(user *domain.User) error {
+	ctx := context.Background()
+
 	params := db.CreateUserParams{
-		Email:    user.Email,
-		Password: user.Password,
-		Name:     user.Name,
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Role:         db.UserRole(user.Role),
 	}
 
-	result, err := r.queries.CreateUser(context.Background(), params)
+	result, err := r.queries.CreateUser(ctx, params)
 	if err != nil {
-		return err
+		return domain.NewInternalError("failed to create user in database", err)
 	}
 
 	user.ID = result.ID
+	if result.CreatedAt.Valid {
+		user.CreatedAt = result.CreatedAt.Time
+	}
+	if result.UpdatedAt.Valid {
+		user.UpdatedAt = result.UpdatedAt.Time
+	}
 	return nil
 }
 
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.User, error) {
-	result, err := r.queries.GetUserByID(context.Background(), id)
+	ctx := context.Background()
+
+	result, err := r.queries.GetUserByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrUserNotFound
 	}
 
-	return &domain.User{
-		ID:       result.ID,			
-		Email:    result.Email,
-		Password: result.Password,
-		Name:     result.Name,
-	}, nil
+	user := &domain.User{
+		ID:           result.ID,
+		Email:        result.Email,
+		PasswordHash: result.PasswordHash,
+		FirstName:    result.FirstName,
+		LastName:     result.LastName,
+		Role:         domain.UserRole(result.Role),
+	}
+	if result.CreatedAt.Valid {
+		user.CreatedAt = result.CreatedAt.Time
+	}
+	if result.UpdatedAt.Valid {
+		user.UpdatedAt = result.UpdatedAt.Time
+	}
+
+	return user, nil
 }
 
 func (r *PostgresRepository) GetByEmail(email string) (*domain.User, error) {
-	result, err := r.queries.GetUserByEmail(context.Background(), email)
+	ctx := context.Background()
+
+	result, err := r.queries.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrUserNotFound
 	}
 
-	return &domain.User{
-		ID:       result.ID,
-		Email:    result.Email,
-		Password: result.Password,
-		Name:     result.Name,
-	}, nil
-}
-
-func (r *PostgresRepository) Update(user *domain.User) error {
-	params := db.UpdateUserParams{
-		ID:       user.ID,
-		Email:    user.Email,
-		Password: user.Password,
-		Name:     user.Name,
+	user := &domain.User{
+		ID:           result.ID,
+		Email:        result.Email,
+		PasswordHash: result.PasswordHash,
+		FirstName:    result.FirstName,
+		LastName:     result.LastName,
+		Role:         domain.UserRole(result.Role),
+	}
+	if result.CreatedAt.Valid {
+		user.CreatedAt = result.CreatedAt.Time
+	}
+	if result.UpdatedAt.Valid {
+		user.UpdatedAt = result.UpdatedAt.Time
 	}
 
-	_, err := r.queries.UpdateUser(context.Background(), params)
-	return err
-}
-
-func (r *PostgresRepository) Delete(id uuid.UUID) error {
-	return r.queries.DeleteUser(context.Background(), id)
+	return user, nil
 }
 
 func (r *PostgresRepository) GetAll() ([]*domain.User, error) {
-	results, err := r.queries.ListUsers(context.Background())
+	ctx := context.Background()
+
+	results, err := r.queries.ListUsers(ctx)
 	if err != nil {
-		return nil, err
+		return nil, domain.NewInternalError("failed to retrieve users from database", err)
 	}
 
-	users := make([]*domain.User, len(results))
-	for i, result := range results {
-		users[i] = &domain.User{
-			ID:       result.ID,
-			Email:    result.Email,
-			Password: result.Password,
-			Name:     result.Name,
+	users := make([]*domain.User, 0, len(results))
+	for _, result := range results {
+		user := &domain.User{
+			ID:           result.ID,
+			Email:        result.Email,
+			PasswordHash: result.PasswordHash,
+			FirstName:    result.FirstName,
+			LastName:     result.LastName,
+			Role:         domain.UserRole(result.Role),
 		}
+		if result.CreatedAt.Valid {
+			user.CreatedAt = result.CreatedAt.Time
+		}
+		if result.UpdatedAt.Valid {
+			user.UpdatedAt = result.UpdatedAt.Time
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}
+
+func (r *PostgresRepository) Update(user *domain.User) error {
+	ctx := context.Background()
+
+	params := db.UpdateUserParams{
+		ID:           user.ID,
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Role:         db.UserRole(user.Role),
 	}
 
-	return users, nil
+	result, err := r.queries.UpdateUser(ctx, params)
+	if err != nil {
+		return domain.NewInternalError("failed to update user in database", err)
+	}
+
+	if result.UpdatedAt.Valid {
+		user.UpdatedAt = result.UpdatedAt.Time
+	}
+	return nil
+}
+
+func (r *PostgresRepository) Delete(id uuid.UUID) error {
+	ctx := context.Background()
+
+	err := r.queries.DeleteUser(ctx, id)
+	if err != nil {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
 } 

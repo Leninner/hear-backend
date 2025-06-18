@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Hear API
   version: 1.0.0
-  description: API for Hear application
+  description: API for Hear application - Academic Management and Attendance System
 
 servers:
   - url: http://localhost:8080
@@ -19,7 +19,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/UserCreate'
       responses:
         '201':
           description: User created successfully
@@ -82,6 +82,442 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response'
+    put:
+      summary: Update user
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    delete:
+      summary: Delete user
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses:
+    post:
+      summary: Create a new course
+      tags:
+        - Courses
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreate'
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    get:
+      summary: Get all courses
+      tags:
+        - Courses
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/{id}:
+    get:
+      summary: Get course by ID
+      tags:
+        - Courses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    put:
+      summary: Update course
+      tags:
+        - Courses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpdate'
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    delete:
+      summary: Delete course
+      tags:
+        - Courses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/{id}/schedules:
+    post:
+      summary: Create a new class schedule
+      tags:
+        - Class Schedules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassScheduleCreate'
+      responses:
+        '201':
+          description: Class schedule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    get:
+      summary: Get all class schedules for a course
+      tags:
+        - Class Schedules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of class schedules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /schedules/{id}:
+    get:
+      summary: Get class schedule by ID
+      tags:
+        - Class Schedules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Class schedule found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Class schedule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    put:
+      summary: Update class schedule
+      tags:
+        - Class Schedules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassScheduleUpdate'
+      responses:
+        '200':
+          description: Class schedule updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Class schedule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    delete:
+      summary: Delete class schedule
+      tags:
+        - Class Schedules
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Class schedule deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Class schedule not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /attendance:
+    post:
+      summary: Record attendance
+      tags:
+        - Attendance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttendanceCreate'
+      responses:
+        '201':
+          description: Attendance recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    get:
+      summary: Get attendance records
+      tags:
+        - Attendance
+      parameters:
+        - name: studentId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: classScheduleId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of attendance records
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /qr-codes:
+    post:
+      summary: Generate QR code for course
+      tags:
+        - QR Codes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRCodeCreate'
+      responses:
+        '201':
+          description: QR code generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    get:
+      summary: Get QR codes for course
+      tags:
+        - QR Codes
+      parameters:
+        - name: courseId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of QR codes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /qr-codes/{code}/validate:
+    post:
+      summary: Validate QR code
+      tags:
+        - QR Codes
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code is valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Invalid QR code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '410':
+          description: QR code has expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
 
 components:
   schemas:
@@ -95,17 +531,311 @@ components:
         email:
           type: string
           format: email
-        password:
-          type: string
-          minLength: 8
-        name:
+        firstName:
           type: string
           minLength: 2
           maxLength: 50
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        role:
+          type: string
+          enum: [admin, teacher, student]
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - email
+        - firstName
+        - lastName
+        - role
+
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        role:
+          type: string
+          enum: [admin, teacher, student]
       required:
         - email
         - password
+        - firstName
+        - lastName
+        - role
+
+    UserUpdate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+        role:
+          type: string
+          enum: [admin, teacher, student]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        facultyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - facultyId
         - name
+        - code
+
+    CourseCreate:
+      type: object
+      properties:
+        facultyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+      required:
+        - facultyId
+        - name
+        - code
+
+    CourseUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+
+    ClassSchedule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        courseId:
+          type: string
+          format: uuid
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - courseId
+        - dayOfWeek
+        - startTime
+        - endTime
+        - location
+
+    ClassScheduleCreate:
+      type: object
+      properties:
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+      required:
+        - dayOfWeek
+        - startTime
+        - endTime
+        - location
+
+    ClassScheduleUpdate:
+      type: object
+      properties:
+        dayOfWeek:
+          type: integer
+          minimum: 0
+          maximum: 6
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+
+    Attendance:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        studentId:
+          type: string
+          format: uuid
+        classScheduleId:
+          type: string
+          format: uuid
+        imageUrl:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - studentId
+        - classScheduleId
+        - imageUrl
+        - metadata
+
+    AttendanceCreate:
+      type: object
+      properties:
+        studentId:
+          type: string
+          format: uuid
+        classScheduleId:
+          type: string
+          format: uuid
+        imageUrl:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/ImageMetadata'
+      required:
+        - studentId
+        - classScheduleId
+        - imageUrl
+        - metadata
+
+    ImageMetadata:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+      required:
+        - timestamp
+        - latitude
+        - longitude
+
+    QRCode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        courseId:
+          type: string
+          format: uuid
+        code:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - courseId
+        - code
+        - expiresAt
+
+    QRCodeCreate:
+      type: object
+      properties:
+        courseId:
+          type: string
+          format: uuid
+        duration:
+          type: integer
+          description: Duration in minutes
+      required:
+        - courseId
+        - duration
 
     Response:
       type: object
@@ -119,6 +849,15 @@ components:
           nullable: true
           oneOf:
             - $ref: '#/components/schemas/User'
+            - $ref: '#/components/schemas/Course'
+            - $ref: '#/components/schemas/ClassSchedule'
+            - $ref: '#/components/schemas/Attendance'
+            - $ref: '#/components/schemas/QRCode'
             - type: array
               items:
-                $ref: '#/components/schemas/User' 
+                oneOf:
+                  - $ref: '#/components/schemas/User'
+                  - $ref: '#/components/schemas/Course'
+                  - $ref: '#/components/schemas/ClassSchedule'
+                  - $ref: '#/components/schemas/Attendance'
+                  - $ref: '#/components/schemas/QRCode' 

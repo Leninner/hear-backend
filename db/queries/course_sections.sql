@@ -1,0 +1,35 @@
+-- name: CreateCourseSection :one
+INSERT INTO course_sections (
+    course_id,
+    section_number,
+    teacher_id,
+    max_students
+) VALUES (
+    $1, $2, $3, $4
+) RETURNING *;
+
+-- name: GetCourseSectionByID :one
+SELECT * FROM course_sections
+WHERE id = $1 LIMIT 1;
+
+-- name: GetCourseSectionsByCourseID :many
+SELECT * FROM course_sections
+WHERE course_id = $1;
+
+-- name: GetCourseSectionsByTeacherID :many
+SELECT * FROM course_sections
+WHERE teacher_id = $1;
+
+-- name: UpdateCourseSection :one
+UPDATE course_sections
+SET
+    section_number = COALESCE($2, section_number),
+    teacher_id = COALESCE($3, teacher_id),
+    max_students = COALESCE($4, max_students),
+    updated_at = CURRENT_TIMESTAMP
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteCourseSection :exec
+DELETE FROM course_sections
+WHERE id = $1; 

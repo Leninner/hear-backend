@@ -1,65 +1,81 @@
-# Hear! Backend
+# Academic Management and Attendance System
 
-Backend for the Hear! app using Golang and Fiber.
+A Go-based backend system for managing academic courses, student attendance, and QR code-based enrollment.
+
+## Features
+
+- User management with role-based access control (Admin, Teacher, Student)
+- Course and class schedule management
+- QR code-based course enrollment
+- Attendance tracking with image metadata validation
+- Location-based attendance verification
 
 ## Architecture
 
-```mermaid
-graph TB
-    subgraph Development Tools
-        Air[Air - Hot Reload]
-        SQLC[SQLC - SQL Compiler]
-        Docker[Docker & Docker Compose]
-        Make[Make - Build Tool]
-    end
+The system follows a clean architecture approach with the following layers:
 
-    subgraph Application Architecture
-        API[API Layer]
-        DI[Dependency Injection]
-        
-        subgraph Core
-            Users[Users Module]
-            Shared[Shared Module]
-        end
-        
-        subgraph Infrastructure
-            DB[(Database)]
-            Cache[(Cache)]
-        end
-    end
+- Domain: Core business logic and entities
+- Service: Business logic implementation
+- Repository: Data access layer using sqlc
+- API: HTTP endpoints using Fiber
 
-    API --> DI
-    DI --> Core
-    Core --> Infrastructure
-    
-    Air --> Application
-    SQLC --> DB
-    Docker --> Infrastructure
-    Make --> Application
-```
+## Database Schema
 
-## Development Tools
+The system uses PostgreSQL with the following main tables:
 
-- Air - Hot reloading during development
-- SQLC - Type-safe SQL queries
-- Docker & Docker Compose - Containerization
-- Make - Build automation
-- Go - Main programming language
-- PostgreSQL - Database
-- Fiber - Web framework
+- users: User accounts with role-based access
+- courses: Course information
+- class_schedules: Class schedules for courses
+- attendance: Student attendance records
+- qr_codes: QR codes for course enrollment
 
-## Development
+## Getting Started
 
+### Prerequisites
+
+- Go 1.24 or later
+- PostgreSQL 12 or later
+- Docker and Docker Compose (optional)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   go mod download
+   ```
+3. Set up the database:
+   ```bash
+   make db-migrate
+   ```
+4. Generate sqlc code:
 ```bash
-air
+   make sqlc
 ```
-
-## Make commands
-
+5. Run the application:
 ```bash
-# Build the project
-make build
-
-# Run the project
 make run
 ```
+
+### Development
+
+- Run tests:
+  ```bash
+  make test
+  ```
+- Generate API documentation:
+  ```bash
+  make swagger
+  ```
+- Format code using gofmt:
+  ```bash
+  gofmt -s -w -d -e -r .
+  ```
+
+## API Documentation
+
+The API documentation is available at `/swagger` when running the application.
+
+## License
+
+This project is licensed under the MIT License.

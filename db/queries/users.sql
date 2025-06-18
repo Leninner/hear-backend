@@ -1,10 +1,12 @@
 -- name: CreateUser :one
 INSERT INTO users (
     email,
-    password,
-    name
+    password_hash,
+    first_name,
+    last_name,
+    role
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4, $5
 ) RETURNING *;
 
 -- name: GetUserByID :one
@@ -19,8 +21,10 @@ WHERE email = $1 LIMIT 1;
 UPDATE users
 SET
     email = COALESCE($2, email),
-    password = COALESCE($3, password),
-    name = COALESCE($4, name),
+    password_hash = COALESCE($3, password_hash),
+    first_name = COALESCE($4, first_name),
+    last_name = COALESCE($5, last_name),
+    role = COALESCE($6, role),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
