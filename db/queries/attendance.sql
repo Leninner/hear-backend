@@ -2,12 +2,10 @@
 INSERT INTO attendance (
     student_id,
     class_schedule_id,
-    attendance_date,
-    image_url,
-    image_metadata,
-    is_valid
+    status,
+    date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4
 ) RETURNING *;
 
 -- name: GetAttendanceByID :one
@@ -17,17 +15,17 @@ WHERE id = $1 LIMIT 1;
 -- name: GetAttendanceByStudentID :many
 SELECT * FROM attendance
 WHERE student_id = $1
-AND attendance_date BETWEEN $2 AND $3;
+AND date BETWEEN $2 AND $3;
 
 -- name: GetAttendanceByClassScheduleID :many
 SELECT * FROM attendance
 WHERE class_schedule_id = $1
-AND attendance_date = $2;
+AND date = $2;
 
 -- name: UpdateAttendance :one
 UPDATE attendance
 SET
-    is_valid = COALESCE($2, is_valid),
+    status = COALESCE($2, status),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *; 

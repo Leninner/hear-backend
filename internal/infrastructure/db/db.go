@@ -24,6 +24,9 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
+	if q.cleanExpiredTokensStmt, err = db.PrepareContext(ctx, cleanExpiredTokens); err != nil {
+		return nil, fmt.Errorf("error preparing query CleanExpiredTokens: %w", err)
+	}
 	if q.createAttendanceStmt, err = db.PrepareContext(ctx, createAttendance); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateAttendance: %w", err)
 	}
@@ -41,6 +44,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.createQRCodeStmt, err = db.PrepareContext(ctx, createQRCode); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateQRCode: %w", err)
+	}
+	if q.createRefreshTokenStmt, err = db.PrepareContext(ctx, createRefreshToken); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateRefreshToken: %w", err)
 	}
 	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
 		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
@@ -60,8 +66,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteQRCodeStmt, err = db.PrepareContext(ctx, deleteQRCode); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteQRCode: %w", err)
 	}
+	if q.deleteRefreshTokenStmt, err = db.PrepareContext(ctx, deleteRefreshToken); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteRefreshToken: %w", err)
+	}
 	if q.deleteUserStmt, err = db.PrepareContext(ctx, deleteUser); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUser: %w", err)
+	}
+	if q.deleteUserRefreshTokensStmt, err = db.PrepareContext(ctx, deleteUserRefreshTokens); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUserRefreshTokens: %w", err)
 	}
 	if q.getAttendanceByClassScheduleIDStmt, err = db.PrepareContext(ctx, getAttendanceByClassScheduleID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAttendanceByClassScheduleID: %w", err)
@@ -114,6 +126,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getQRCodesByCourseIDStmt, err = db.PrepareContext(ctx, getQRCodesByCourseID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetQRCodesByCourseID: %w", err)
 	}
+	if q.getRefreshTokenStmt, err = db.PrepareContext(ctx, getRefreshToken); err != nil {
+		return nil, fmt.Errorf("error preparing query GetRefreshToken: %w", err)
+	}
 	if q.getUserByEmailStmt, err = db.PrepareContext(ctx, getUserByEmail); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByEmail: %w", err)
 	}
@@ -146,6 +161,11 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 
 func (q *Queries) Close() error {
 	var err error
+	if q.cleanExpiredTokensStmt != nil {
+		if cerr := q.cleanExpiredTokensStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing cleanExpiredTokensStmt: %w", cerr)
+		}
+	}
 	if q.createAttendanceStmt != nil {
 		if cerr := q.createAttendanceStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createAttendanceStmt: %w", cerr)
@@ -174,6 +194,11 @@ func (q *Queries) Close() error {
 	if q.createQRCodeStmt != nil {
 		if cerr := q.createQRCodeStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing createQRCodeStmt: %w", cerr)
+		}
+	}
+	if q.createRefreshTokenStmt != nil {
+		if cerr := q.createRefreshTokenStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createRefreshTokenStmt: %w", cerr)
 		}
 	}
 	if q.createUserStmt != nil {
@@ -206,9 +231,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteQRCodeStmt: %w", cerr)
 		}
 	}
+	if q.deleteRefreshTokenStmt != nil {
+		if cerr := q.deleteRefreshTokenStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteRefreshTokenStmt: %w", cerr)
+		}
+	}
 	if q.deleteUserStmt != nil {
 		if cerr := q.deleteUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing deleteUserStmt: %w", cerr)
+		}
+	}
+	if q.deleteUserRefreshTokensStmt != nil {
+		if cerr := q.deleteUserRefreshTokensStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUserRefreshTokensStmt: %w", cerr)
 		}
 	}
 	if q.getAttendanceByClassScheduleIDStmt != nil {
@@ -296,6 +331,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getQRCodesByCourseIDStmt: %w", cerr)
 		}
 	}
+	if q.getRefreshTokenStmt != nil {
+		if cerr := q.getRefreshTokenStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getRefreshTokenStmt: %w", cerr)
+		}
+	}
 	if q.getUserByEmailStmt != nil {
 		if cerr := q.getUserByEmailStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserByEmailStmt: %w", cerr)
@@ -380,19 +420,23 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 type Queries struct {
 	db                                      DBTX
 	tx                                      *sql.Tx
+	cleanExpiredTokensStmt                  *sql.Stmt
 	createAttendanceStmt                    *sql.Stmt
 	createClassScheduleStmt                 *sql.Stmt
 	createClassroomStmt                     *sql.Stmt
 	createCourseStmt                        *sql.Stmt
 	createCourseSectionStmt                 *sql.Stmt
 	createQRCodeStmt                        *sql.Stmt
+	createRefreshTokenStmt                  *sql.Stmt
 	createUserStmt                          *sql.Stmt
 	deleteClassScheduleStmt                 *sql.Stmt
 	deleteClassroomStmt                     *sql.Stmt
 	deleteCourseStmt                        *sql.Stmt
 	deleteCourseSectionStmt                 *sql.Stmt
 	deleteQRCodeStmt                        *sql.Stmt
+	deleteRefreshTokenStmt                  *sql.Stmt
 	deleteUserStmt                          *sql.Stmt
+	deleteUserRefreshTokensStmt             *sql.Stmt
 	getAttendanceByClassScheduleIDStmt      *sql.Stmt
 	getAttendanceByIDStmt                   *sql.Stmt
 	getAttendanceByStudentIDStmt            *sql.Stmt
@@ -410,6 +454,7 @@ type Queries struct {
 	getNearbyClassroomsStmt                 *sql.Stmt
 	getQRCodeByCodeStmt                     *sql.Stmt
 	getQRCodesByCourseIDStmt                *sql.Stmt
+	getRefreshTokenStmt                     *sql.Stmt
 	getUserByEmailStmt                      *sql.Stmt
 	getUserByIDStmt                         *sql.Stmt
 	listUsersStmt                           *sql.Stmt
@@ -425,19 +470,23 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
 		db:                                      tx,
 		tx:                                      tx,
+		cleanExpiredTokensStmt:                  q.cleanExpiredTokensStmt,
 		createAttendanceStmt:                    q.createAttendanceStmt,
 		createClassScheduleStmt:                 q.createClassScheduleStmt,
 		createClassroomStmt:                     q.createClassroomStmt,
 		createCourseStmt:                        q.createCourseStmt,
 		createCourseSectionStmt:                 q.createCourseSectionStmt,
 		createQRCodeStmt:                        q.createQRCodeStmt,
+		createRefreshTokenStmt:                  q.createRefreshTokenStmt,
 		createUserStmt:                          q.createUserStmt,
 		deleteClassScheduleStmt:                 q.deleteClassScheduleStmt,
 		deleteClassroomStmt:                     q.deleteClassroomStmt,
 		deleteCourseStmt:                        q.deleteCourseStmt,
 		deleteCourseSectionStmt:                 q.deleteCourseSectionStmt,
 		deleteQRCodeStmt:                        q.deleteQRCodeStmt,
+		deleteRefreshTokenStmt:                  q.deleteRefreshTokenStmt,
 		deleteUserStmt:                          q.deleteUserStmt,
+		deleteUserRefreshTokensStmt:             q.deleteUserRefreshTokensStmt,
 		getAttendanceByClassScheduleIDStmt:      q.getAttendanceByClassScheduleIDStmt,
 		getAttendanceByIDStmt:                   q.getAttendanceByIDStmt,
 		getAttendanceByStudentIDStmt:            q.getAttendanceByStudentIDStmt,
@@ -455,6 +504,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getNearbyClassroomsStmt:                 q.getNearbyClassroomsStmt,
 		getQRCodeByCodeStmt:                     q.getQRCodeByCodeStmt,
 		getQRCodesByCourseIDStmt:                q.getQRCodesByCourseIDStmt,
+		getRefreshTokenStmt:                     q.getRefreshTokenStmt,
 		getUserByEmailStmt:                      q.getUserByEmailStmt,
 		getUserByIDStmt:                         q.getUserByIDStmt,
 		listUsersStmt:                           q.listUsersStmt,

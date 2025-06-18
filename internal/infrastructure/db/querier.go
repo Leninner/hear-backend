@@ -11,19 +11,23 @@ import (
 )
 
 type Querier interface {
+	CleanExpiredTokens(ctx context.Context) error
 	CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error)
 	CreateClassSchedule(ctx context.Context, arg CreateClassScheduleParams) (ClassSchedule, error)
 	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
 	CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error)
 	CreateCourseSection(ctx context.Context, arg CreateCourseSectionParams) (CourseSection, error)
 	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
+	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteClassSchedule(ctx context.Context, id uuid.UUID) error
 	DeleteClassroom(ctx context.Context, id uuid.UUID) error
 	DeleteCourse(ctx context.Context, id uuid.UUID) error
 	DeleteCourseSection(ctx context.Context, id uuid.UUID) error
 	DeleteQRCode(ctx context.Context, id uuid.UUID) error
+	DeleteRefreshToken(ctx context.Context, token string) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	DeleteUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
 	GetAttendanceByClassScheduleID(ctx context.Context, arg GetAttendanceByClassScheduleIDParams) ([]Attendance, error)
 	GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendance, error)
 	GetAttendanceByStudentID(ctx context.Context, arg GetAttendanceByStudentIDParams) ([]Attendance, error)
@@ -41,6 +45,7 @@ type Querier interface {
 	GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroomsParams) ([]GetNearbyClassroomsRow, error)
 	GetQRCodeByCode(ctx context.Context, code string) (QrCode, error)
 	GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) ([]QrCode, error)
+	GetRefreshToken(ctx context.Context, token string) (uuid.UUID, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	ListUsers(ctx context.Context) ([]User, error)

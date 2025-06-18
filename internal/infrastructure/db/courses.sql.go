@@ -21,15 +21,15 @@ INSERT INTO class_schedules (
     classroom_id
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, course_id, day_of_week, start_time, end_time, location, created_at, updated_at, classroom_id, section_id
+) RETURNING id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at
 `
 
 type CreateClassScheduleParams struct {
-	CourseID    uuid.UUID     `json:"course_id"`
-	DayOfWeek   int32         `json:"day_of_week"`
-	StartTime   time.Time     `json:"start_time"`
-	EndTime     time.Time     `json:"end_time"`
-	ClassroomID uuid.NullUUID `json:"classroom_id"`
+	CourseID    uuid.UUID `json:"course_id"`
+	DayOfWeek   int32     `json:"day_of_week"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
+	ClassroomID uuid.UUID `json:"classroom_id"`
 }
 
 func (q *Queries) CreateClassSchedule(ctx context.Context, arg CreateClassScheduleParams) (ClassSchedule, error) {
@@ -44,14 +44,13 @@ func (q *Queries) CreateClassSchedule(ctx context.Context, arg CreateClassSchedu
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
+		&i.SectionID,
 		&i.DayOfWeek,
 		&i.StartTime,
 		&i.EndTime,
-		&i.Location,
+		&i.ClassroomID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ClassroomID,
-		&i.SectionID,
 	)
 	return i, err
 }
@@ -63,7 +62,7 @@ INSERT INTO courses (
     code
 ) VALUES (
     $1, $2, $3
-) RETURNING id, faculty_id, name, code, created_at, updated_at, description, credits, semester, academic_year, is_active
+) RETURNING id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at
 `
 
 type CreateCourseParams struct {
@@ -80,13 +79,13 @@ func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) (Cou
 		&i.FacultyID,
 		&i.Name,
 		&i.Code,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Credits,
 		&i.Semester,
 		&i.AcademicYear,
 		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -112,7 +111,7 @@ func (q *Queries) DeleteCourse(ctx context.Context, id uuid.UUID) error {
 }
 
 const getClassScheduleByID = `-- name: GetClassScheduleByID :one
-SELECT id, course_id, day_of_week, start_time, end_time, location, created_at, updated_at, classroom_id, section_id FROM class_schedules
+SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
 WHERE id = $1 LIMIT 1
 `
 
@@ -122,20 +121,19 @@ func (q *Queries) GetClassScheduleByID(ctx context.Context, id uuid.UUID) (Class
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
+		&i.SectionID,
 		&i.DayOfWeek,
 		&i.StartTime,
 		&i.EndTime,
-		&i.Location,
+		&i.ClassroomID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ClassroomID,
-		&i.SectionID,
 	)
 	return i, err
 }
 
 const getClassSchedulesByClassroomAndTime = `-- name: GetClassSchedulesByClassroomAndTime :many
-SELECT id, course_id, day_of_week, start_time, end_time, location, created_at, updated_at, classroom_id, section_id FROM class_schedules
+SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
 WHERE classroom_id = $1
 AND day_of_week = $2
 AND (
@@ -146,10 +144,10 @@ AND (
 `
 
 type GetClassSchedulesByClassroomAndTimeParams struct {
-	ClassroomID uuid.NullUUID `json:"classroom_id"`
-	DayOfWeek   int32         `json:"day_of_week"`
-	StartTime   time.Time     `json:"start_time"`
-	StartTime_2 time.Time     `json:"start_time_2"`
+	ClassroomID uuid.UUID `json:"classroom_id"`
+	DayOfWeek   int32     `json:"day_of_week"`
+	StartTime   time.Time `json:"start_time"`
+	StartTime_2 time.Time `json:"start_time_2"`
 }
 
 func (q *Queries) GetClassSchedulesByClassroomAndTime(ctx context.Context, arg GetClassSchedulesByClassroomAndTimeParams) ([]ClassSchedule, error) {
@@ -169,14 +167,13 @@ func (q *Queries) GetClassSchedulesByClassroomAndTime(ctx context.Context, arg G
 		if err := rows.Scan(
 			&i.ID,
 			&i.CourseID,
+			&i.SectionID,
 			&i.DayOfWeek,
 			&i.StartTime,
 			&i.EndTime,
-			&i.Location,
+			&i.ClassroomID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.ClassroomID,
-			&i.SectionID,
 		); err != nil {
 			return nil, err
 		}
@@ -192,7 +189,7 @@ func (q *Queries) GetClassSchedulesByClassroomAndTime(ctx context.Context, arg G
 }
 
 const getClassSchedulesByCourseID = `-- name: GetClassSchedulesByCourseID :many
-SELECT id, course_id, day_of_week, start_time, end_time, location, created_at, updated_at, classroom_id, section_id FROM class_schedules
+SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
 WHERE course_id = $1
 `
 
@@ -208,14 +205,13 @@ func (q *Queries) GetClassSchedulesByCourseID(ctx context.Context, courseID uuid
 		if err := rows.Scan(
 			&i.ID,
 			&i.CourseID,
+			&i.SectionID,
 			&i.DayOfWeek,
 			&i.StartTime,
 			&i.EndTime,
-			&i.Location,
+			&i.ClassroomID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.ClassroomID,
-			&i.SectionID,
 		); err != nil {
 			return nil, err
 		}
@@ -231,7 +227,7 @@ func (q *Queries) GetClassSchedulesByCourseID(ctx context.Context, courseID uuid
 }
 
 const getCourseByID = `-- name: GetCourseByID :one
-SELECT id, faculty_id, name, code, created_at, updated_at, description, credits, semester, academic_year, is_active FROM courses
+SELECT id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at FROM courses
 WHERE id = $1 LIMIT 1
 `
 
@@ -243,19 +239,19 @@ func (q *Queries) GetCourseByID(ctx context.Context, id uuid.UUID) (Course, erro
 		&i.FacultyID,
 		&i.Name,
 		&i.Code,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Credits,
 		&i.Semester,
 		&i.AcademicYear,
 		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getCoursesByFacultyID = `-- name: GetCoursesByFacultyID :many
-SELECT id, faculty_id, name, code, created_at, updated_at, description, credits, semester, academic_year, is_active FROM courses
+SELECT id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at FROM courses
 WHERE faculty_id = $1
 `
 
@@ -273,13 +269,13 @@ func (q *Queries) GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID
 			&i.FacultyID,
 			&i.Name,
 			&i.Code,
-			&i.CreatedAt,
-			&i.UpdatedAt,
 			&i.Description,
 			&i.Credits,
 			&i.Semester,
 			&i.AcademicYear,
 			&i.IsActive,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -303,15 +299,15 @@ SET
     classroom_id = COALESCE($5, classroom_id),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, course_id, day_of_week, start_time, end_time, location, created_at, updated_at, classroom_id, section_id
+RETURNING id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at
 `
 
 type UpdateClassScheduleParams struct {
-	ID          uuid.UUID     `json:"id"`
-	DayOfWeek   int32         `json:"day_of_week"`
-	StartTime   time.Time     `json:"start_time"`
-	EndTime     time.Time     `json:"end_time"`
-	ClassroomID uuid.NullUUID `json:"classroom_id"`
+	ID          uuid.UUID `json:"id"`
+	DayOfWeek   int32     `json:"day_of_week"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
+	ClassroomID uuid.UUID `json:"classroom_id"`
 }
 
 func (q *Queries) UpdateClassSchedule(ctx context.Context, arg UpdateClassScheduleParams) (ClassSchedule, error) {
@@ -326,14 +322,13 @@ func (q *Queries) UpdateClassSchedule(ctx context.Context, arg UpdateClassSchedu
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
+		&i.SectionID,
 		&i.DayOfWeek,
 		&i.StartTime,
 		&i.EndTime,
-		&i.Location,
+		&i.ClassroomID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ClassroomID,
-		&i.SectionID,
 	)
 	return i, err
 }
@@ -345,7 +340,7 @@ SET
     code = COALESCE($3, code),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, faculty_id, name, code, created_at, updated_at, description, credits, semester, academic_year, is_active
+RETURNING id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at
 `
 
 type UpdateCourseParams struct {
@@ -362,13 +357,13 @@ func (q *Queries) UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Cou
 		&i.FacultyID,
 		&i.Name,
 		&i.Code,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.Description,
 		&i.Credits,
 		&i.Semester,
 		&i.AcademicYear,
 		&i.IsActive,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

@@ -17,8 +17,8 @@ func NewUseCase(repository domain.Repository) *UseCase {
 	}
 }
 
-func (uc *UseCase) CreateAttendance(studentID, courseID uuid.UUID, status domain.AttendanceStatus, date time.Time) (*domain.Attendance, error) {
-	attendance := domain.NewAttendance(studentID, courseID, status, date)
+func (uc *UseCase) CreateAttendance(studentID, classScheduleID uuid.UUID, status domain.AttendanceStatus, date time.Time) (*domain.Attendance, error) {
+	attendance := domain.NewAttendance(studentID, classScheduleID, status, date)
 	err := uc.repository.Create(attendance)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func (uc *UseCase) GetStudentAttendance(studentID uuid.UUID) ([]*domain.Attendan
 	return uc.repository.GetByStudentID(studentID)
 }
 
-func (uc *UseCase) GetCourseAttendance(courseID uuid.UUID) ([]*domain.Attendance, error) {
-	return uc.repository.GetByCourseID(courseID)
+func (uc *UseCase) GetClassScheduleAttendance(classScheduleID uuid.UUID) ([]*domain.Attendance, error) {
+	return uc.repository.GetByClassScheduleID(classScheduleID)
 }
 
 func (uc *UseCase) GetAttendanceByDate(date time.Time) ([]*domain.Attendance, error) {

@@ -3,6 +3,7 @@ package application
 import (
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/users/domain"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UseCase struct {
@@ -25,7 +26,12 @@ func (uc *UseCase) CreateUser(dto *domain.CreateUserDTO) (*domain.User, error) {
 		return nil, domain.ErrEmailExists
 	}
 
-	user := domain.NewUser(dto.Email, dto.Password, dto.FirstName, dto.LastName, dto.Role)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to hash password", err)
+	}
+
+	user := domain.NewUser(dto.Email, string(hashedPassword), dto.FirstName, dto.LastName, dto.Role)
 	if err := uc.repository.Create(user); err != nil {
 		return nil, domain.NewInternalError("failed to create user in database", err)
 	}

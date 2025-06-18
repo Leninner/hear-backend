@@ -20,10 +20,10 @@ func NewHandler(useCase *UseCase) *Handler {
 
 func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 	var input struct {
-		StudentID uuid.UUID           `json:"studentId"`
-		CourseID  uuid.UUID           `json:"courseId"`
-		Status    domain.AttendanceStatus `json:"status"`
-		Date      time.Time           `json:"date"`
+		StudentID       uuid.UUID           `json:"studentId"`
+		ClassScheduleID uuid.UUID           `json:"classScheduleId"`
+		Status          domain.AttendanceStatus `json:"status"`
+		Date            time.Time           `json:"date"`
 	}
 
 	if err := c.BodyParser(&input); err != nil {
@@ -32,7 +32,7 @@ func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 		})
 	}
 
-	attendance, err := h.useCase.CreateAttendance(input.StudentID, input.CourseID, input.Status, input.Date)
+	attendance, err := h.useCase.CreateAttendance(input.StudentID, input.ClassScheduleID, input.Status, input.Date)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create attendance",
@@ -78,18 +78,18 @@ func (h *Handler) GetStudentAttendance(c *fiber.Ctx) error {
 	return c.JSON(attendances)
 }
 
-func (h *Handler) GetCourseAttendance(c *fiber.Ctx) error {
-	courseID, err := uuid.Parse(c.Params("courseId"))
+func (h *Handler) GetClassScheduleAttendance(c *fiber.Ctx) error {
+	classScheduleID, err := uuid.Parse(c.Params("classScheduleId"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid course ID",
+			"error": "Invalid class schedule ID",
 		})
 	}
 
-	attendances, err := h.useCase.GetCourseAttendance(courseID)
+	attendances, err := h.useCase.GetClassScheduleAttendance(classScheduleID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch course attendance",
+			"error": "Failed to fetch class schedule attendance",
 		})
 	}
 

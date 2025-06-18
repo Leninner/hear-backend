@@ -2,7 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"time"
 
@@ -26,15 +25,25 @@ func (r *PostgresRepository) Create(attendance *domain.Attendance) error {
 	
 	params := db.CreateAttendanceParams{
 		StudentID:       attendance.StudentID,
-		ClassScheduleID: attendance.CourseID,
-		AttendanceDate:  attendance.Date,
-		ImageUrl:        "",
-		ImageMetadata:   json.RawMessage("{}"),
-		IsValid:         attendance.Status == domain.StatusPresent,
+		ClassScheduleID: attendance.ClassScheduleID,
+		Status:          db.AttendanceStatus(attendance.Status),
+		Date:            attendance.Date,
 	}
 	
-	_, err := r.db.CreateAttendance(ctx, params)
-	return err
+	result, err := r.db.CreateAttendance(ctx, params)
+	if err != nil {
+		return err
+	}
+	
+	attendance.ID = result.ID
+	if result.CreatedAt.Valid {
+		attendance.CreatedAt = result.CreatedAt.Time
+	}
+	if result.UpdatedAt.Valid {
+		attendance.UpdatedAt = result.UpdatedAt.Time
+	}
+	
+	return nil
 }
 
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Attendance, error) {
@@ -55,9 +64,9 @@ func (r *PostgresRepository) GetByStudentID(studentID uuid.UUID) ([]*domain.Atte
 	endDate := time.Now().AddDate(0, 6, 0)
 	
 	params := db.GetAttendanceByStudentIDParams{
-		StudentID:        studentID,
-		AttendanceDate:   startDate,
-		AttendanceDate_2: endDate,
+		StudentID: studentID,
+		Date:      startDate,
+		Date_2:    endDate,
 	}
 	
 	dbAttendances, err := r.db.GetAttendanceByStudentID(ctx, params)
@@ -73,12 +82,12 @@ func (r *PostgresRepository) GetByStudentID(studentID uuid.UUID) ([]*domain.Atte
 	return attendances, nil
 }
 
-func (r *PostgresRepository) GetByCourseID(courseID uuid.UUID) ([]*domain.Attendance, error) {
+func (r *PostgresRepository) GetByClassScheduleID(classScheduleID uuid.UUID) ([]*domain.Attendance, error) {
 	ctx := context.Background()
 	
 	params := db.GetAttendanceByClassScheduleIDParams{
-		ClassScheduleID: courseID,
-		AttendanceDate:  time.Now(),
+		ClassScheduleID: classScheduleID,
+		Date:            time.Now(),
 	}
 	
 	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
@@ -99,7 +108,7 @@ func (r *PostgresRepository) GetByDate(date time.Time) ([]*domain.Attendance, er
 	
 	params := db.GetAttendanceByClassScheduleIDParams{
 		ClassScheduleID: uuid.Nil,
-		AttendanceDate:  date,
+		Date:            date,
 	}
 	
 	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
@@ -119,12 +128,20 @@ func (r *PostgresRepository) Update(attendance *domain.Attendance) error {
 	ctx := context.Background()
 	
 	params := db.UpdateAttendanceParams{
-		ID:      attendance.ID,
-		IsValid: attendance.Status == domain.StatusPresent,
+		ID:     attendance.ID,
+		Status: db.AttendanceStatus(attendance.Status),
 	}
 	
-	_, err := r.db.UpdateAttendance(ctx, params)
-	return err
+	result, err := r.db.UpdateAttendance(ctx, params)
+	if err != nil {
+		return err
+	}
+	
+	if result.UpdatedAt.Valid {
+		attendance.UpdatedAt = result.UpdatedAt.Time
+	}
+	
+	return nil
 }
 
 func (r *PostgresRepository) Delete(id uuid.UUID) error {
@@ -132,17 +149,12 @@ func (r *PostgresRepository) Delete(id uuid.UUID) error {
 }
 
 func (r *PostgresRepository) mapToDomain(dbAttendance *db.Attendance) *domain.Attendance {
-	status := domain.StatusAbsent
-	if dbAttendance.IsValid {
-		status = domain.StatusPresent
-	}
-	
 	attendance := &domain.Attendance{
-		ID:        dbAttendance.ID,
-		StudentID: dbAttendance.StudentID,
-		CourseID:  dbAttendance.ClassScheduleID,
-		Status:    status,
-		Date:      dbAttendance.AttendanceDate,
+		ID:             dbAttendance.ID,
+		StudentID:      dbAttendance.StudentID,
+		ClassScheduleID: dbAttendance.ClassScheduleID,
+		Status:         domain.AttendanceStatus(dbAttendance.Status),
+		Date:           dbAttendance.Date,
 	}
 	
 	if dbAttendance.CreatedAt.Valid {

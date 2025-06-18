@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	attendance "github.com/leninner/hear-backend/internal/attendance"
 	attendanceApp "github.com/leninner/hear-backend/internal/attendance/application"
+	auth "github.com/leninner/hear-backend/internal/auth"
+	authApp "github.com/leninner/hear-backend/internal/auth/application"
 	classroom "github.com/leninner/hear-backend/internal/classroom"
 	classroomApp "github.com/leninner/hear-backend/internal/classroom/application"
 	courses "github.com/leninner/hear-backend/internal/courses"
@@ -18,6 +20,7 @@ import (
 
 type Container struct {
 	App             *fiber.App
+	AuthHandler     *authApp.Handler
 	UserHandler     *userApp.Handler
 	DocsHandler     *docsApp.DocsHandler
 	AttendanceHandler *attendanceApp.Handler
@@ -37,15 +40,19 @@ func NewContainer(db *db.Queries) *Container {
 
 	api := app.Group("/api")
 	
-	// APP MODULES
-	userHandler := users.Setup(api, db)
-	attendanceHandler := attendance.Setup(api, db)
-	classroomHandler := classroom.Setup(api, db)
-	qrcodeHandler := qrcode.Setup(api, db)
-	coursesHandler := courses.Setup(api, db)
+	// AUTH MODULE (no auth required)
+	authHandler := auth.Setup(api, db)
+	
+	// APP MODULES (each handles its own middleware)
+	userHandler := users.Setup(api, db, authHandler)
+	attendanceHandler := attendance.Setup(api, db, authHandler)
+	classroomHandler := classroom.Setup(api, db, authHandler)
+	qrcodeHandler := qrcode.Setup(api, db, authHandler)
+	coursesHandler := courses.Setup(api, db, authHandler)
 
 	return &Container{
 		App:             app,
+		AuthHandler:     authHandler,
 		UserHandler:     userHandler,
 		DocsHandler:     docsHandler,
 		AttendanceHandler: attendanceHandler,

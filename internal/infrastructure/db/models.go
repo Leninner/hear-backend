@@ -7,12 +7,54 @@ package db
 import (
 	"database/sql"
 	"database/sql/driver"
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type AttendanceStatus string
+
+const (
+	AttendanceStatusPresent AttendanceStatus = "present"
+	AttendanceStatusAbsent  AttendanceStatus = "absent"
+	AttendanceStatusLate    AttendanceStatus = "late"
+)
+
+func (e *AttendanceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AttendanceStatus(s)
+	case string:
+		*e = AttendanceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AttendanceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullAttendanceStatus struct {
+	AttendanceStatus AttendanceStatus `json:"attendance_status"`
+	Valid            bool             `json:"valid"` // Valid is true if AttendanceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAttendanceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.AttendanceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AttendanceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAttendanceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AttendanceStatus), nil
+}
 
 type UserRole string
 
@@ -58,28 +100,25 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 }
 
 type Attendance struct {
-	ID              uuid.UUID       `json:"id"`
-	StudentID       uuid.UUID       `json:"student_id"`
-	ClassScheduleID uuid.UUID       `json:"class_schedule_id"`
-	AttendanceDate  time.Time       `json:"attendance_date"`
-	ImageUrl        string          `json:"image_url"`
-	ImageMetadata   json.RawMessage `json:"image_metadata"`
-	IsValid         bool            `json:"is_valid"`
-	CreatedAt       sql.NullTime    `json:"created_at"`
-	UpdatedAt       sql.NullTime    `json:"updated_at"`
+	ID              uuid.UUID        `json:"id"`
+	StudentID       uuid.UUID        `json:"student_id"`
+	ClassScheduleID uuid.UUID        `json:"class_schedule_id"`
+	Status          AttendanceStatus `json:"status"`
+	Date            time.Time        `json:"date"`
+	CreatedAt       sql.NullTime     `json:"created_at"`
+	UpdatedAt       sql.NullTime     `json:"updated_at"`
 }
 
 type ClassSchedule struct {
-	ID          uuid.UUID     `json:"id"`
-	CourseID    uuid.UUID     `json:"course_id"`
-	DayOfWeek   int32         `json:"day_of_week"`
-	StartTime   time.Time     `json:"start_time"`
-	EndTime     time.Time     `json:"end_time"`
-	Location    string        `json:"location"`
-	CreatedAt   sql.NullTime  `json:"created_at"`
-	UpdatedAt   sql.NullTime  `json:"updated_at"`
-	ClassroomID uuid.NullUUID `json:"classroom_id"`
-	SectionID   uuid.NullUUID `json:"section_id"`
+	ID          uuid.UUID    `json:"id"`
+	CourseID    uuid.UUID    `json:"course_id"`
+	SectionID   uuid.UUID    `json:"section_id"`
+	DayOfWeek   int32        `json:"day_of_week"`
+	StartTime   time.Time    `json:"start_time"`
+	EndTime     time.Time    `json:"end_time"`
+	ClassroomID uuid.UUID    `json:"classroom_id"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
 }
 
 type Classroom struct {
@@ -99,13 +138,13 @@ type Course struct {
 	FacultyID    uuid.UUID      `json:"faculty_id"`
 	Name         string         `json:"name"`
 	Code         string         `json:"code"`
-	CreatedAt    sql.NullTime   `json:"created_at"`
-	UpdatedAt    sql.NullTime   `json:"updated_at"`
 	Description  sql.NullString `json:"description"`
 	Credits      int32          `json:"credits"`
 	Semester     sql.NullString `json:"semester"`
 	AcademicYear sql.NullString `json:"academic_year"`
-	IsActive     bool           `json:"is_active"`
+	IsActive     sql.NullBool   `json:"is_active"`
+	CreatedAt    sql.NullTime   `json:"created_at"`
+	UpdatedAt    sql.NullTime   `json:"updated_at"`
 }
 
 type CourseSection struct {
@@ -143,6 +182,14 @@ type QrCode struct {
 	ID        uuid.UUID    `json:"id"`
 	CourseID  uuid.UUID    `json:"course_id"`
 	Code      string       `json:"code"`
+	ExpiresAt time.Time    `json:"expires_at"`
+	CreatedAt sql.NullTime `json:"created_at"`
+}
+
+type RefreshToken struct {
+	ID        uuid.UUID    `json:"id"`
+	UserID    uuid.UUID    `json:"user_id"`
+	Token     string       `json:"token"`
 	ExpiresAt time.Time    `json:"expires_at"`
 	CreatedAt sql.NullTime `json:"created_at"`
 }

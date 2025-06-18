@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,42 +16,34 @@ const createAttendance = `-- name: CreateAttendance :one
 INSERT INTO attendance (
     student_id,
     class_schedule_id,
-    attendance_date,
-    image_url,
-    image_metadata,
-    is_valid
+    status,
+    date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
-) RETURNING id, student_id, class_schedule_id, attendance_date, image_url, image_metadata, is_valid, created_at, updated_at
+    $1, $2, $3, $4
+) RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at
 `
 
 type CreateAttendanceParams struct {
-	StudentID       uuid.UUID       `json:"student_id"`
-	ClassScheduleID uuid.UUID       `json:"class_schedule_id"`
-	AttendanceDate  time.Time       `json:"attendance_date"`
-	ImageUrl        string          `json:"image_url"`
-	ImageMetadata   json.RawMessage `json:"image_metadata"`
-	IsValid         bool            `json:"is_valid"`
+	StudentID       uuid.UUID        `json:"student_id"`
+	ClassScheduleID uuid.UUID        `json:"class_schedule_id"`
+	Status          AttendanceStatus `json:"status"`
+	Date            time.Time        `json:"date"`
 }
 
 func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error) {
 	row := q.queryRow(ctx, q.createAttendanceStmt, createAttendance,
 		arg.StudentID,
 		arg.ClassScheduleID,
-		arg.AttendanceDate,
-		arg.ImageUrl,
-		arg.ImageMetadata,
-		arg.IsValid,
+		arg.Status,
+		arg.Date,
 	)
 	var i Attendance
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
 		&i.ClassScheduleID,
-		&i.AttendanceDate,
-		&i.ImageUrl,
-		&i.ImageMetadata,
-		&i.IsValid,
+		&i.Status,
+		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -60,18 +51,18 @@ func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendancePara
 }
 
 const getAttendanceByClassScheduleID = `-- name: GetAttendanceByClassScheduleID :many
-SELECT id, student_id, class_schedule_id, attendance_date, image_url, image_metadata, is_valid, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
 WHERE class_schedule_id = $1
-AND attendance_date = $2
+AND date = $2
 `
 
 type GetAttendanceByClassScheduleIDParams struct {
 	ClassScheduleID uuid.UUID `json:"class_schedule_id"`
-	AttendanceDate  time.Time `json:"attendance_date"`
+	Date            time.Time `json:"date"`
 }
 
 func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAttendanceByClassScheduleIDParams) ([]Attendance, error) {
-	rows, err := q.query(ctx, q.getAttendanceByClassScheduleIDStmt, getAttendanceByClassScheduleID, arg.ClassScheduleID, arg.AttendanceDate)
+	rows, err := q.query(ctx, q.getAttendanceByClassScheduleIDStmt, getAttendanceByClassScheduleID, arg.ClassScheduleID, arg.Date)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +74,8 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 			&i.ID,
 			&i.StudentID,
 			&i.ClassScheduleID,
-			&i.AttendanceDate,
-			&i.ImageUrl,
-			&i.ImageMetadata,
-			&i.IsValid,
+			&i.Status,
+			&i.Date,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -104,7 +93,7 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 }
 
 const getAttendanceByID = `-- name: GetAttendanceByID :one
-SELECT id, student_id, class_schedule_id, attendance_date, image_url, image_metadata, is_valid, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
 WHERE id = $1 LIMIT 1
 `
 
@@ -115,10 +104,8 @@ func (q *Queries) GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendan
 		&i.ID,
 		&i.StudentID,
 		&i.ClassScheduleID,
-		&i.AttendanceDate,
-		&i.ImageUrl,
-		&i.ImageMetadata,
-		&i.IsValid,
+		&i.Status,
+		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -126,19 +113,19 @@ func (q *Queries) GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendan
 }
 
 const getAttendanceByStudentID = `-- name: GetAttendanceByStudentID :many
-SELECT id, student_id, class_schedule_id, attendance_date, image_url, image_metadata, is_valid, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
 WHERE student_id = $1
-AND attendance_date BETWEEN $2 AND $3
+AND date BETWEEN $2 AND $3
 `
 
 type GetAttendanceByStudentIDParams struct {
-	StudentID        uuid.UUID `json:"student_id"`
-	AttendanceDate   time.Time `json:"attendance_date"`
-	AttendanceDate_2 time.Time `json:"attendance_date_2"`
+	StudentID uuid.UUID `json:"student_id"`
+	Date      time.Time `json:"date"`
+	Date_2    time.Time `json:"date_2"`
 }
 
 func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanceByStudentIDParams) ([]Attendance, error) {
-	rows, err := q.query(ctx, q.getAttendanceByStudentIDStmt, getAttendanceByStudentID, arg.StudentID, arg.AttendanceDate, arg.AttendanceDate_2)
+	rows, err := q.query(ctx, q.getAttendanceByStudentIDStmt, getAttendanceByStudentID, arg.StudentID, arg.Date, arg.Date_2)
 	if err != nil {
 		return nil, err
 	}
@@ -150,10 +137,8 @@ func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanc
 			&i.ID,
 			&i.StudentID,
 			&i.ClassScheduleID,
-			&i.AttendanceDate,
-			&i.ImageUrl,
-			&i.ImageMetadata,
-			&i.IsValid,
+			&i.Status,
+			&i.Date,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -173,28 +158,26 @@ func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanc
 const updateAttendance = `-- name: UpdateAttendance :one
 UPDATE attendance
 SET
-    is_valid = COALESCE($2, is_valid),
+    status = COALESCE($2, status),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, student_id, class_schedule_id, attendance_date, image_url, image_metadata, is_valid, created_at, updated_at
+RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at
 `
 
 type UpdateAttendanceParams struct {
-	ID      uuid.UUID `json:"id"`
-	IsValid bool      `json:"is_valid"`
+	ID     uuid.UUID        `json:"id"`
+	Status AttendanceStatus `json:"status"`
 }
 
 func (q *Queries) UpdateAttendance(ctx context.Context, arg UpdateAttendanceParams) (Attendance, error) {
-	row := q.queryRow(ctx, q.updateAttendanceStmt, updateAttendance, arg.ID, arg.IsValid)
+	row := q.queryRow(ctx, q.updateAttendanceStmt, updateAttendance, arg.ID, arg.Status)
 	var i Attendance
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
 		&i.ClassScheduleID,
-		&i.AttendanceDate,
-		&i.ImageUrl,
-		&i.ImageMetadata,
-		&i.IsValid,
+		&i.Status,
+		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

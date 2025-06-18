@@ -176,9 +176,9 @@ ORDER BY distance
 `
 
 type GetNearbyClassroomsParams struct {
-	LlToEarth   interface{} `json:"ll_to_earth"`
-	LlToEarth_2 interface{} `json:"ll_to_earth_2"`
-	EarthBox    interface{} `json:"earth_box"`
+	LlToEarth   float64 `json:"ll_to_earth"`
+	LlToEarth_2 float64 `json:"ll_to_earth_2"`
+	EarthBox    float64 `json:"earth_box"`
 }
 
 type GetNearbyClassroomsRow struct {
@@ -191,7 +191,7 @@ type GetNearbyClassroomsRow struct {
 	LocationLng string       `json:"location_lng"`
 	CreatedAt   sql.NullTime `json:"created_at"`
 	UpdatedAt   sql.NullTime `json:"updated_at"`
-	Distance    interface{}  `json:"distance"`
+	Distance    float64      `json:"distance"`
 }
 
 func (q *Queries) GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroomsParams) ([]GetNearbyClassroomsRow, error) {
