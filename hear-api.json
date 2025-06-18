@@ -357,139 +357,59 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
 						],
-						"url": {
-							"raw": "{{base_url}}/api/courses",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"courses"
-							]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": {
-								"name": "Mathematics 101",
-								"description": "Introduction to Mathematics",
-								"teacherId": "uuid"
-							}
-						}
+						"url": { "raw": "{{base_url}}/courses", "host": ["{{base_url}}"], "path": ["courses"] },
+						"body": { "mode": "raw", "raw": "{\n  \"name\": \"Mathematics 101\",\n  \"description\": \"Introduction to Mathematics\",\n  \"teacherId\": \"uuid\",\n  \"facultyId\": \"uuid\"\n}" }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": {
-										"name": "Mathematics 101",
-										"description": "Introduction to Mathematics",
-										"teacherId": "uuid"
-									}
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"name": "Mathematics 101",
-								"description": "Introduction to Mathematics",
-								"teacherId": "uuid",
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
-				},
-				{
-					"name": "Get Course by ID",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/courses/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"courses",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "uuid"
-								}
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"name": "Mathematics 101",
-								"description": "Introduction to Mathematics",
-								"teacherId": "uuid",
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher or admin role"
 				},
 				{
 					"name": "Get All Courses",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/courses",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"courses"
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/courses", "host": ["{{base_url}}"], "path": ["courses"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"name": "Mathematics 101",
-									"description": "Introduction to Mathematics",
-									"teacherId": "uuid",
-									"createdAt": "timestamp",
-									"updatedAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Get Course by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/courses/:id", "host": ["{{base_url}}"], "path": ["courses", ":id"] }
+					},
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/courses/:id", "host": ["{{base_url}}"], "path": ["courses", ":id"] },
+						"body": { "mode": "raw", "raw": "{\n  \"name\": \"Advanced Mathematics\",\n  \"description\": \"Advanced Mathematics Course\"\n}" }
+					},
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/courses/:id", "host": ["{{base_url}}"], "path": ["courses", ":id"] }
+					},
+					"description": "Requires teacher or admin role"
 				}
 			]
 		},
@@ -502,191 +422,70 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
 						],
-						"url": {
-							"raw": "{{base_url}}/api/classrooms",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"classrooms"
-							]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": {
-								"name": "Room 101",
-								"location": "Building A",
-								"description": "Main lecture hall",
-								"capacity": 50
-							}
-						}
+						"url": { "raw": "{{base_url}}/classrooms", "host": ["{{base_url}}"], "path": ["classrooms"] },
+						"body": { "mode": "raw", "raw": "{\n  \"name\": \"Room 101\",\n  \"building\": \"Building A\",\n  \"floor\": 1,\n  \"capacity\": 50,\n  \"locationLat\": 40.7128,\n  \"locationLng\": -74.0060\n}" }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": {
-										"name": "Room 101",
-										"location": "Building A",
-										"description": "Main lecture hall",
-										"capacity": 50
-									}
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"name": "Room 101",
-								"location": "Building A",
-								"description": "Main lecture hall",
-								"capacity": 50,
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
-				},
-				{
-					"name": "Get Classroom by ID",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/classrooms/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"classrooms",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "uuid"
-								}
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"name": "Room 101",
-								"location": "Building A",
-								"description": "Main lecture hall",
-								"capacity": 50,
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher or admin role"
 				},
 				{
 					"name": "Get All Classrooms",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/classrooms",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"classrooms"
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/classrooms", "host": ["{{base_url}}"], "path": ["classrooms"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"name": "Room 101",
-									"location": "Building A",
-									"description": "Main lecture hall",
-									"capacity": 50,
-									"createdAt": "timestamp",
-									"updatedAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Get Classroom by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/classrooms/:id", "host": ["{{base_url}}"], "path": ["classrooms", ":id"] }
+					},
+					"description": "Requires teacher or admin role"
 				},
 				{
 					"name": "Get Classrooms by Location",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/classrooms/location/:location",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"classrooms",
-								"location",
-								":location"
-							],
-							"variable": [
-								{
-									"key": "location",
-									"value": "Building A"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/classrooms/location/:location", "host": ["{{base_url}}"], "path": ["classrooms", "location", ":location"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"name": "Room 101",
-									"location": "Building A",
-									"description": "Main lecture hall",
-									"capacity": 50,
-									"createdAt": "timestamp",
-									"updatedAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Update Classroom",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/classrooms/:id", "host": ["{{base_url}}"], "path": ["classrooms", ":id"] },
+						"body": { "mode": "raw", "raw": "{\n  \"name\": \"Room 102\",\n  \"capacity\": 60\n}" }
+					},
+					"description": "Requires teacher or admin role"
+				},
+				{
+					"name": "Delete Classroom",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/classrooms/:id", "host": ["{{base_url}}"], "path": ["classrooms", ":id"] }
+					},
+					"description": "Requires teacher or admin role"
 				}
 			]
 		},
@@ -699,199 +498,70 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
 						],
-						"url": {
-							"raw": "{{base_url}}/api/attendance",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"attendance"
-							]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": {
-								"studentId": "uuid",
-								"courseId": "uuid",
-								"status": "present",
-								"date": "2024-03-20T10:00:00Z"
-							}
-						}
+						"url": { "raw": "{{base_url}}/attendance", "host": ["{{base_url}}"], "path": ["attendance"] },
+						"body": { "mode": "raw", "raw": "{\n  \"studentId\": \"uuid\",\n  \"classScheduleId\": \"uuid\",\n  \"status\": \"present\",\n  \"date\": \"2024-03-20T10:00:00Z\"\n}" }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": {
-										"studentId": "uuid",
-										"courseId": "uuid",
-										"status": "present",
-										"date": "2024-03-20T10:00:00Z"
-									}
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"studentId": "uuid",
-								"courseId": "uuid",
-								"status": "present",
-								"date": "2024-03-20T10:00:00Z",
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher or student role"
 				},
 				{
 					"name": "Get Attendance by ID",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/attendance/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"attendance",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "uuid"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/attendance/:id", "host": ["{{base_url}}"], "path": ["attendance", ":id"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"studentId": "uuid",
-								"courseId": "uuid",
-								"status": "present",
-								"date": "2024-03-20T10:00:00Z",
-								"createdAt": "timestamp",
-								"updatedAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher or student role"
 				},
 				{
 					"name": "Get Student Attendance",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/attendance/student/:studentId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"attendance",
-								"student",
-								":studentId"
-							],
-							"variable": [
-								{
-									"key": "studentId",
-									"value": "uuid"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/attendance/student/:studentId", "host": ["{{base_url}}"], "path": ["attendance", "student", ":studentId"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"studentId": "uuid",
-									"courseId": "uuid",
-									"status": "present",
-									"date": "2024-03-20T10:00:00Z",
-									"createdAt": "timestamp",
-									"updatedAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher or student role"
 				},
 				{
-					"name": "Get Course Attendance",
+					"name": "Get Class Schedule Attendance",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/attendance/course/:courseId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"attendance",
-								"course",
-								":courseId"
-							],
-							"variable": [
-								{
-									"key": "courseId",
-									"value": "uuid"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/attendance/class-schedule/:classScheduleId", "host": ["{{base_url}}"], "path": ["attendance", "class-schedule", ":classScheduleId"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"studentId": "uuid",
-									"courseId": "uuid",
-									"status": "present",
-									"date": "2024-03-20T10:00:00Z",
-									"createdAt": "timestamp",
-									"updatedAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher or student role"
+				},
+				{
+					"name": "Update Attendance",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/attendance/:id", "host": ["{{base_url}}"], "path": ["attendance", ":id"] },
+						"body": { "mode": "raw", "raw": "{\n  \"status\": \"absent\",\n  \"date\": \"2024-03-20T10:00:00Z\"\n}" }
+					},
+					"description": "Requires teacher or student role"
+				},
+				{
+					"name": "Delete Attendance",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/attendance/:id", "host": ["{{base_url}}"], "path": ["attendance", ":id"] }
+					},
+					"description": "Requires teacher or student role"
 				}
 			]
 		},
@@ -904,231 +574,381 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
 						],
-						"url": {
-							"raw": "{{base_url}}/api/qrcodes",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"qrcodes"
-							]
-						},
-						"body": {
-							"mode": "raw",
-							"raw": {
-								"courseId": "uuid",
-								"code": "unique_code",
-								"expiresAt": "2024-03-20T11:00:00Z"
-							}
-						}
+						"url": { "raw": "{{base_url}}/qrcodes", "host": ["{{base_url}}"], "path": ["qrcodes"] },
+						"body": { "mode": "raw", "raw": "{\n  \"courseId\": \"uuid\",\n  \"code\": \"unique_code\",\n  \"expiresAt\": \"2024-03-20T11:00:00Z\"\n}" }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": {
-										"courseId": "uuid",
-										"code": "unique_code",
-										"expiresAt": "2024-03-20T11:00:00Z"
-									}
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"courseId": "uuid",
-								"code": "unique_code",
-								"expiresAt": "2024-03-20T11:00:00Z",
-								"createdAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher role"
 				},
 				{
 					"name": "Get QR Code by ID",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/qrcodes/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"qrcodes",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "uuid"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/:id", "host": ["{{base_url}}"], "path": ["qrcodes", ":id"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"courseId": "uuid",
-								"code": "unique_code",
-								"expiresAt": "2024-03-20T11:00:00Z",
-								"createdAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher role"
 				},
 				{
 					"name": "Get QR Code by Code",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/qrcodes/code/:code",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"qrcodes",
-								"code",
-								":code"
-							],
-							"variable": [
-								{
-									"key": "code",
-									"value": "unique_code"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/code/:code", "host": ["{{base_url}}"], "path": ["qrcodes", "code", ":code"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"courseId": "uuid",
-								"code": "unique_code",
-								"expiresAt": "2024-03-20T11:00:00Z",
-								"createdAt": "timestamp"
-							}
-						}
-					]
+					"description": "Requires teacher role"
 				},
 				{
 					"name": "Get Course QR Codes",
 					"request": {
 						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/api/qrcodes/course/:courseId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"qrcodes",
-								"course",
-								":courseId"
-							],
-							"variable": [
-								{
-									"key": "courseId",
-									"value": "uuid"
-								}
-							]
-						}
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/course/:courseId", "host": ["{{base_url}}"], "path": ["qrcodes", "course", ":courseId"] }
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": [
-								{
-									"id": "uuid",
-									"courseId": "uuid",
-									"code": "unique_code",
-									"expiresAt": "2024-03-20T11:00:00Z",
-									"createdAt": "timestamp"
-								}
-							]
-						}
-					]
+					"description": "Requires teacher role"
 				},
 				{
 					"name": "Get Active QR Code",
 					"request": {
 						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/course/:courseId/active", "host": ["{{base_url}}"], "path": ["qrcodes", "course", ":courseId", "active"] }
+					},
+					"description": "Requires teacher role"
+				},
+				{
+					"name": "Update QR Code",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/:id", "host": ["{{base_url}}"], "path": ["qrcodes", ":id"] },
+						"body": { "mode": "raw", "raw": "{\n  \"code\": \"new_unique_code\",\n  \"expiresAt\": \"2024-03-20T12:00:00Z\"\n}" }
+					},
+					"description": "Requires teacher role"
+				},
+				{
+					"name": "Delete QR Code",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{token}}" }
+						],
+						"url": { "raw": "{{base_url}}/qrcodes/:id", "host": ["{{base_url}}"], "path": ["qrcodes", ":id"] }
+					},
+					"description": "Requires teacher role"
+				}
+			]
+		},
+		{
+			"name": "Faculties",
+			"description": "Faculty management endpoints",
+			"item": [
+				{
+					"name": "Get All Faculties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/api/qrcodes/course/:courseId/active",
+							"raw": "{{base_url}}/faculties",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"api",
-								"qrcodes",
-								"course",
-								":courseId",
-								"active"
-							],
-							"variable": [
-								{
-									"key": "courseId",
-									"value": "uuid"
-								}
+								"faculties"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Success",
-							"originalRequest": {
-								"method": "GET",
-								"header": []
-							},
-							"status": "OK",
-							"code": 200,
-							"header": [],
-							"body": {
-								"id": "uuid",
-								"courseId": "uuid",
-								"code": "unique_code",
-								"expiresAt": "2024-03-20T11:00:00Z",
-								"createdAt": "timestamp"
+					"description": "Public endpoint - requires authentication"
+				},
+				{
+					"name": "Get Faculty by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
 							}
+						],
+						"url": {
+							"raw": "{{base_url}}/faculties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"faculties",
+								":id"
+							]
 						}
-					]
+					},
+					"description": "Public endpoint - requires authentication"
+				},
+				{
+					"name": "Get Faculties by University",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/faculties/university/:universityId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"faculties",
+								"university",
+								":universityId"
+							]
+						}
+					},
+					"description": "Public endpoint - requires authentication"
+				},
+				{
+					"name": "Create Faculty",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/faculties",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"faculties"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"universityId\": \"uuid\",\n  \"name\": \"Faculty of Engineering\",\n  \"locationLat\": 40.7128,\n  \"locationLng\": -74.0060\n}"
+						}
+					},
+					"description": "Requires admin role"
+				},
+				{
+					"name": "Update Faculty",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/faculties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"faculties",
+								":id"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Faculty of Computer Science\",\n  \"locationLat\": 40.7128,\n  \"locationLng\": -74.0060\n}"
+						}
+					},
+					"description": "Requires admin role"
+				},
+				{
+					"name": "Delete Faculty",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/faculties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"faculties",
+								":id"
+							]
+						}
+					},
+					"description": "Requires admin role"
+				}
+			]
+		},
+		{
+			"name": "Universities",
+			"description": "University management endpoints",
+			"item": [
+				{
+					"name": "Get All Universities",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/universities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities"
+							]
+						}
+					},
+					"description": "Public endpoint - requires authentication"
+				},
+				{
+					"name": "Get University by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/universities/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"universities",
+								":id"
+							]
+						}
+					},
+					"description": "Public endpoint - requires authentication"
+				},
+				{
+					"name": "Create University",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/universities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"universities"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"University of Technology\"\n}"
+						}
+					},
+					"description": "Requires admin role"
+				},
+				{
+					"name": "Update University",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/universities/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"universities",
+								":id"
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"University of Computer Science\"\n}"
+						}
+					},
+					"description": "Requires admin role"
+				},
+				{
+					"name": "Delete University",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/universities/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"universities",
+								":id"
+							]
+						}
+					},
+					"description": "Requires admin role"
 				}
 			]
 		}
