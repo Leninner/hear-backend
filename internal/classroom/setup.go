@@ -1,14 +1,13 @@
 package classroom
 
 import (
-	"database/sql"
-
 	"github.com/gofiber/fiber/v2"
 	classroomApp "github.com/leninner/hear-backend/internal/classroom/application"
 	classroomRepo "github.com/leninner/hear-backend/internal/classroom/infrastructure"
+	"github.com/leninner/hear-backend/internal/infrastructure/db"
 )
 
-func Setup(api fiber.Router, db *sql.DB) *classroomApp.Handler {
+func Setup(api fiber.Router, db *db.Queries) *classroomApp.Handler {
 	classrooms := api.Group("/classrooms")
 
 	classroomRepository := classroomRepo.NewPostgresRepository(db)

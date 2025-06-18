@@ -1,200 +1,156 @@
 package infrastructure
 
 import (
-	"database/sql"
+	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/attendance/domain"
+	"github.com/leninner/hear-backend/internal/infrastructure/db"
 )
 
 type PostgresRepository struct {
-	db *sql.DB
+	db *db.Queries
 }
 
-func NewPostgresRepository(db *sql.DB) *PostgresRepository {
+func NewPostgresRepository(db *db.Queries) *PostgresRepository {
 	return &PostgresRepository{
 		db: db,
 	}
 }
 
 func (r *PostgresRepository) Create(attendance *domain.Attendance) error {
-	query := `
-		INSERT INTO attendances (id, student_id, course_id, status, date, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`
-	_, err := r.db.Exec(query,
-		attendance.ID,
-		attendance.StudentID,
-		attendance.CourseID,
-		attendance.Status,
-		attendance.Date,
-		attendance.CreatedAt,
-		attendance.UpdatedAt,
-	)
+	ctx := context.Background()
+	
+	params := db.CreateAttendanceParams{
+		StudentID:       attendance.StudentID,
+		ClassScheduleID: attendance.CourseID,
+		AttendanceDate:  attendance.Date,
+		ImageUrl:        "",
+		ImageMetadata:   json.RawMessage("{}"),
+		IsValid:         attendance.Status == domain.StatusPresent,
+	}
+	
+	_, err := r.db.CreateAttendance(ctx, params)
 	return err
 }
 
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Attendance, error) {
-	query := `
-		SELECT id, student_id, course_id, status, date, created_at, updated_at
-		FROM attendances
-		WHERE id = $1
-	`
-	attendance := &domain.Attendance{}
-	err := r.db.QueryRow(query, id).Scan(
-		&attendance.ID,
-		&attendance.StudentID,
-		&attendance.CourseID,
-		&attendance.Status,
-		&attendance.Date,
-		&attendance.CreatedAt,
-		&attendance.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
+	ctx := context.Background()
+	
+	dbAttendance, err := r.db.GetAttendanceByID(ctx, id)
+	if err != nil {
 		return nil, errors.New("attendance not found")
 	}
-	return attendance, err
+	
+	return r.mapToDomain(&dbAttendance), nil
 }
 
 func (r *PostgresRepository) GetByStudentID(studentID uuid.UUID) ([]*domain.Attendance, error) {
-	query := `
-		SELECT id, student_id, course_id, status, date, created_at, updated_at
-		FROM attendances
-		WHERE student_id = $1
-	`
-	rows, err := r.db.Query(query, studentID)
+	ctx := context.Background()
+	
+	startDate := time.Now().AddDate(0, -6, 0)
+	endDate := time.Now().AddDate(0, 6, 0)
+	
+	params := db.GetAttendanceByStudentIDParams{
+		StudentID:        studentID,
+		AttendanceDate:   startDate,
+		AttendanceDate_2: endDate,
+	}
+	
+	dbAttendances, err := r.db.GetAttendanceByStudentID(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
+	
 	var attendances []*domain.Attendance
-	for rows.Next() {
-		attendance := &domain.Attendance{}
-		err := rows.Scan(
-			&attendance.ID,
-			&attendance.StudentID,
-			&attendance.CourseID,
-			&attendance.Status,
-			&attendance.Date,
-			&attendance.CreatedAt,
-			&attendance.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		attendances = append(attendances, attendance)
+	for _, dbAttendance := range dbAttendances {
+		attendances = append(attendances, r.mapToDomain(&dbAttendance))
 	}
+	
 	return attendances, nil
 }
 
 func (r *PostgresRepository) GetByCourseID(courseID uuid.UUID) ([]*domain.Attendance, error) {
-	query := `
-		SELECT id, student_id, course_id, status, date, created_at, updated_at
-		FROM attendances
-		WHERE course_id = $1
-	`
-	rows, err := r.db.Query(query, courseID)
+	ctx := context.Background()
+	
+	params := db.GetAttendanceByClassScheduleIDParams{
+		ClassScheduleID: courseID,
+		AttendanceDate:  time.Now(),
+	}
+	
+	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
+	
 	var attendances []*domain.Attendance
-	for rows.Next() {
-		attendance := &domain.Attendance{}
-		err := rows.Scan(
-			&attendance.ID,
-			&attendance.StudentID,
-			&attendance.CourseID,
-			&attendance.Status,
-			&attendance.Date,
-			&attendance.CreatedAt,
-			&attendance.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		attendances = append(attendances, attendance)
+	for _, dbAttendance := range dbAttendances {
+		attendances = append(attendances, r.mapToDomain(&dbAttendance))
 	}
+	
 	return attendances, nil
 }
 
 func (r *PostgresRepository) GetByDate(date time.Time) ([]*domain.Attendance, error) {
-	query := `
-		SELECT id, student_id, course_id, status, date, created_at, updated_at
-		FROM attendances
-		WHERE date::date = $1::date
-	`
-	rows, err := r.db.Query(query, date)
+	ctx := context.Background()
+	
+	params := db.GetAttendanceByClassScheduleIDParams{
+		ClassScheduleID: uuid.Nil,
+		AttendanceDate:  date,
+	}
+	
+	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
+	
 	var attendances []*domain.Attendance
-	for rows.Next() {
-		attendance := &domain.Attendance{}
-		err := rows.Scan(
-			&attendance.ID,
-			&attendance.StudentID,
-			&attendance.CourseID,
-			&attendance.Status,
-			&attendance.Date,
-			&attendance.CreatedAt,
-			&attendance.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		attendances = append(attendances, attendance)
+	for _, dbAttendance := range dbAttendances {
+		attendances = append(attendances, r.mapToDomain(&dbAttendance))
 	}
+	
 	return attendances, nil
 }
 
 func (r *PostgresRepository) Update(attendance *domain.Attendance) error {
-	query := `
-		UPDATE attendances
-		SET student_id = $1, course_id = $2, status = $3, date = $4, updated_at = $5
-		WHERE id = $6
-	`
-	result, err := r.db.Exec(query,
-		attendance.StudentID,
-		attendance.CourseID,
-		attendance.Status,
-		attendance.Date,
-		attendance.UpdatedAt,
-		attendance.ID,
-	)
-	if err != nil {
-		return err
+	ctx := context.Background()
+	
+	params := db.UpdateAttendanceParams{
+		ID:      attendance.ID,
+		IsValid: attendance.Status == domain.StatusPresent,
 	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return errors.New("attendance not found")
-	}
-	return nil
+	
+	_, err := r.db.UpdateAttendance(ctx, params)
+	return err
 }
 
 func (r *PostgresRepository) Delete(id uuid.UUID) error {
-	query := `DELETE FROM attendances WHERE id = $1`
-	result, err := r.db.Exec(query, id)
-	if err != nil {
-		return err
-	}
+	return errors.New("delete operation not implemented in generated queries")
+}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
+func (r *PostgresRepository) mapToDomain(dbAttendance *db.Attendance) *domain.Attendance {
+	status := domain.StatusAbsent
+	if dbAttendance.IsValid {
+		status = domain.StatusPresent
 	}
-	if rowsAffected == 0 {
-		return errors.New("attendance not found")
+	
+	attendance := &domain.Attendance{
+		ID:        dbAttendance.ID,
+		StudentID: dbAttendance.StudentID,
+		CourseID:  dbAttendance.ClassScheduleID,
+		Status:    status,
+		Date:      dbAttendance.AttendanceDate,
 	}
-	return nil
+	
+	if dbAttendance.CreatedAt.Valid {
+		attendance.CreatedAt = dbAttendance.CreatedAt.Time
+	}
+	if dbAttendance.UpdatedAt.Valid {
+		attendance.UpdatedAt = dbAttendance.UpdatedAt.Time
+	}
+	
+	return attendance
 } 

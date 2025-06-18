@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/leninner/hear-backend/internal/di"
+	"github.com/leninner/hear-backend/internal/infrastructure/db"
 	server "github.com/leninner/hear-backend/internal/shared/server"
 	_ "github.com/lib/pq"
 )
@@ -21,7 +22,7 @@ func main() {
 	log.Fatal(container.App.Listen(":8080"))
 }
 
-func setupDB() *sql.DB {
+func setupDB() *db.Queries {
 	dbHost := flag.String("db-host", "localhost", "Database host")
 	dbPort := flag.String("db-port", "5432", "Database port")
 	dbUser := flag.String("db-user", "hear", "Database user")
@@ -37,9 +38,9 @@ func setupDB() *sql.DB {
 		log.Fatal(err)
 	}
 
-	if err := sqlDB.Ping(); err != nil {
+	if err = sqlDB.Ping(); err != nil {
 		log.Fatal(err)
 	}
 
-	return sqlDB
+	return db.New(sqlDB)
 }

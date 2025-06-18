@@ -1,191 +1,157 @@
 package infrastructure
 
 import (
-	"database/sql"
+	"context"
 	"errors"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/classroom/domain"
+	"github.com/leninner/hear-backend/internal/infrastructure/db"
 )
 
 type PostgresRepository struct {
-	db *sql.DB
+	db *db.Queries
 }
 
-func NewPostgresRepository(db *sql.DB) *PostgresRepository {
+func NewPostgresRepository(db *db.Queries) *PostgresRepository {
 	return &PostgresRepository{
 		db: db,
 	}
 }
 
 func (r *PostgresRepository) Create(classroom *domain.Classroom) error {
-	query := `
-		INSERT INTO classrooms (id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-	`
-	_, err := r.db.Exec(query,
-		classroom.ID,
-		classroom.Name,
-		classroom.Building,
-		classroom.Floor,
-		classroom.Capacity,
-		classroom.LocationLat,
-		classroom.LocationLng,
-		classroom.CreatedAt,
-		classroom.UpdatedAt,
-	)
+	ctx := context.Background()
+	
+	params := db.CreateClassroomParams{
+		Name:        classroom.Name,
+		Building:    classroom.Building,
+		Floor:       int32(classroom.Floor),
+		Capacity:    int32(classroom.Capacity),
+		LocationLat: strconv.FormatFloat(classroom.LocationLat, 'f', -1, 64),
+		LocationLng: strconv.FormatFloat(classroom.LocationLng, 'f', -1, 64),
+	}
+	
+	_, err := r.db.CreateClassroom(ctx, params)
 	return err
 }
 
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Classroom, error) {
-	query := `
-		SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at
-		FROM classrooms
-		WHERE id = $1
-	`
-	classroom := &domain.Classroom{}
-	err := r.db.QueryRow(query, id).Scan(
-		&classroom.ID,
-		&classroom.Name,
-		&classroom.Building,
-		&classroom.Floor,
-		&classroom.Capacity,
-		&classroom.LocationLat,
-		&classroom.LocationLng,
-		&classroom.CreatedAt,
-		&classroom.UpdatedAt,
-	)
-	if err == sql.ErrNoRows {
+	ctx := context.Background()
+	
+	dbClassroom, err := r.db.GetClassroomByID(ctx, id)
+	if err != nil {
 		return nil, errors.New("classroom not found")
 	}
-	return classroom, err
+	
+	return r.mapToDomain(&dbClassroom), nil
 }
 
 func (r *PostgresRepository) GetAll() ([]*domain.Classroom, error) {
-	query := `
-		SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at
-		FROM classrooms
-		ORDER BY name
-	`
-	rows, err := r.db.Query(query)
+	ctx := context.Background()
+	
+	dbClassrooms, err := r.db.GetClassroomsByBuilding(ctx, "")
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
+	
 	var classrooms []*domain.Classroom
-	for rows.Next() {
-		classroom := &domain.Classroom{}
-		err := rows.Scan(
-			&classroom.ID,
-			&classroom.Name,
-			&classroom.Building,
-			&classroom.Floor,
-			&classroom.Capacity,
-			&classroom.LocationLat,
-			&classroom.LocationLng,
-			&classroom.CreatedAt,
-			&classroom.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-		classrooms = append(classrooms, classroom)
+	for _, dbClassroom := range dbClassrooms {
+		classrooms = append(classrooms, r.mapToDomain(&dbClassroom))
 	}
+	
 	return classrooms, nil
 }
 
 func (r *PostgresRepository) GetByLocation(lat, lng, radius float64) ([]*domain.Classroom, error) {
-	query := `
-		SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at
-		FROM classrooms
-		WHERE (
-			(6371 * acos(
-				cos(radians($1)) * cos(radians(location_lat)) *
-				cos(radians(location_lng) - radians($2)) +
-				sin(radians($1)) * sin(radians(location_lat))
-			)) <= $3
-		)
-		ORDER BY (
-			(6371 * acos(
-				cos(radians($1)) * cos(radians(location_lat)) *
-				cos(radians(location_lng) - radians($2)) +
-				sin(radians($1)) * sin(radians(location_lat))
-			))
-		)
-	`
-	rows, err := r.db.Query(query, lat, lng, radius)
+	ctx := context.Background()
+	
+	params := db.GetNearbyClassroomsParams{
+		LlToEarth:   lat,
+		LlToEarth_2: lng,
+		EarthBox:    radius,
+	}
+	
+	dbClassrooms, err := r.db.GetNearbyClassrooms(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
+	
 	var classrooms []*domain.Classroom
-	for rows.Next() {
-		classroom := &domain.Classroom{}
-		err := rows.Scan(
-			&classroom.ID,
-			&classroom.Name,
-			&classroom.Building,
-			&classroom.Floor,
-			&classroom.Capacity,
-			&classroom.LocationLat,
-			&classroom.LocationLng,
-			&classroom.CreatedAt,
-			&classroom.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
+	for _, dbClassroom := range dbClassrooms {
+		classroom := &domain.Classroom{
+			ID:          dbClassroom.ID,
+			Name:        dbClassroom.Name,
+			Building:    dbClassroom.Building,
+			Floor:       int(dbClassroom.Floor),
+			Capacity:    int(dbClassroom.Capacity),
+			LocationLat: r.parseFloat(dbClassroom.LocationLat),
+			LocationLng: r.parseFloat(dbClassroom.LocationLng),
 		}
+		
+		if dbClassroom.CreatedAt.Valid {
+			classroom.CreatedAt = dbClassroom.CreatedAt.Time
+		}
+		if dbClassroom.UpdatedAt.Valid {
+			classroom.UpdatedAt = dbClassroom.UpdatedAt.Time
+		}
+		
 		classrooms = append(classrooms, classroom)
 	}
+	
 	return classrooms, nil
 }
 
 func (r *PostgresRepository) Update(classroom *domain.Classroom) error {
-	query := `
-		UPDATE classrooms
-		SET name = $1, building = $2, floor = $3, capacity = $4,
-			location_lat = $5, location_lng = $6, updated_at = $7
-		WHERE id = $8
-	`
-	result, err := r.db.Exec(query,
-		classroom.Name,
-		classroom.Building,
-		classroom.Floor,
-		classroom.Capacity,
-		classroom.LocationLat,
-		classroom.LocationLng,
-		classroom.UpdatedAt,
-		classroom.ID,
-	)
-	if err != nil {
-		return err
+	ctx := context.Background()
+	
+	params := db.UpdateClassroomParams{
+		ID:          classroom.ID,
+		Name:        classroom.Name,
+		Building:    classroom.Building,
+		Floor:       int32(classroom.Floor),
+		Capacity:    int32(classroom.Capacity),
+		LocationLat: strconv.FormatFloat(classroom.LocationLat, 'f', -1, 64),
+		LocationLng: strconv.FormatFloat(classroom.LocationLng, 'f', -1, 64),
 	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
-		return errors.New("classroom not found")
-	}
-	return nil
+	
+	_, err := r.db.UpdateClassroom(ctx, params)
+	return err
 }
 
 func (r *PostgresRepository) Delete(id uuid.UUID) error {
-	query := `DELETE FROM classrooms WHERE id = $1`
-	result, err := r.db.Exec(query, id)
+	ctx := context.Background()
+	
+	err := r.db.DeleteClassroom(ctx, id)
 	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if rowsAffected == 0 {
 		return errors.New("classroom not found")
 	}
+	
 	return nil
+}
+
+func (r *PostgresRepository) mapToDomain(dbClassroom *db.Classroom) *domain.Classroom {
+	classroom := &domain.Classroom{
+		ID:          dbClassroom.ID,
+		Name:        dbClassroom.Name,
+		Building:    dbClassroom.Building,
+		Floor:       int(dbClassroom.Floor),
+		Capacity:    int(dbClassroom.Capacity),
+		LocationLat: r.parseFloat(dbClassroom.LocationLat),
+		LocationLng: r.parseFloat(dbClassroom.LocationLng),
+	}
+	
+	if dbClassroom.CreatedAt.Valid {
+		classroom.CreatedAt = dbClassroom.CreatedAt.Time
+	}
+	if dbClassroom.UpdatedAt.Valid {
+		classroom.UpdatedAt = dbClassroom.UpdatedAt.Time
+	}
+	
+	return classroom
+}
+
+func (r *PostgresRepository) parseFloat(s string) float64 {
+	f, _ := strconv.ParseFloat(s, 64)
+	return f
 } 
