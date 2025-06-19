@@ -20,10 +20,13 @@ func NewHandler(useCase *UseCase) *Handler {
 
 func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 	var input struct {
-		StudentID       uuid.UUID           `json:"studentId"`
-		ClassScheduleID uuid.UUID           `json:"classScheduleId"`
-		Status          domain.AttendanceStatus `json:"status"`
-		Date            time.Time           `json:"date"`
+		StudentID         uuid.UUID           `json:"studentId"`
+		ClassScheduleID   uuid.UUID           `json:"classScheduleId"`
+		Status            domain.AttendanceStatus `json:"status"`
+		Date              time.Time           `json:"date"`
+		UserLatitude      *float64            `json:"userLatitude,omitempty"`
+		UserLongitude     *float64            `json:"userLongitude,omitempty"`
+		MaxDistanceMeters *int                `json:"maxDistanceMeters,omitempty"`
 	}
 
 	if err := c.BodyParser(&input); err != nil {
@@ -32,10 +35,35 @@ func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 		})
 	}
 
-	attendance, err := h.useCase.CreateAttendance(input.StudentID, input.ClassScheduleID, input.Status, input.Date)
+	// Create DTO for validation
+	dto := domain.CreateAttendanceDTO{
+		StudentID:         input.StudentID,
+		ClassScheduleID:   input.ClassScheduleID,
+		Status:            input.Status,
+		Date:              input.Date,
+		UserLatitude:      input.UserLatitude,
+		UserLongitude:     input.UserLongitude,
+		MaxDistanceMeters: input.MaxDistanceMeters,
+	}
+
+	if err := dto.Validate(); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	attendance, err := h.useCase.CreateAttendanceWithLocation(
+		input.StudentID, 
+		input.ClassScheduleID, 
+		input.Status, 
+		input.Date,
+		input.UserLatitude,
+		input.UserLongitude,
+		input.MaxDistanceMeters,
+	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to create attendance",
+			"error": err.Error(),
 		})
 	}
 

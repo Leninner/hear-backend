@@ -7,10 +7,13 @@ import (
 )
 
 type CreateAttendanceDTO struct {
-	StudentID      uuid.UUID       `json:"studentId"`
-	ClassScheduleID uuid.UUID      `json:"classScheduleId"`
-	Status         AttendanceStatus `json:"status"`
-	Date           time.Time       `json:"date"`
+	StudentID         uuid.UUID       `json:"studentId"`
+	ClassScheduleID   uuid.UUID       `json:"classScheduleId"`
+	Status            AttendanceStatus `json:"status"`
+	Date              time.Time       `json:"date"`
+	UserLatitude      *float64        `json:"userLatitude,omitempty"`
+	UserLongitude     *float64        `json:"userLongitude,omitempty"`
+	MaxDistanceMeters *int            `json:"maxDistanceMeters,omitempty"`
 }
 
 func (dto *CreateAttendanceDTO) Validate() error {
@@ -40,6 +43,28 @@ func (dto *CreateAttendanceDTO) Validate() error {
 		validationErrors.AddError(ErrDateCannotBeFuture)
 	}
 
+	// Validate location coordinates if provided
+	if dto.UserLatitude != nil || dto.UserLongitude != nil {
+		if dto.UserLatitude == nil {
+			validationErrors.AddError(ErrLatitudeRequired)
+		} else if *dto.UserLatitude < -90 || *dto.UserLatitude > 90 {
+			validationErrors.AddError(ErrLatitudeInvalid)
+		}
+
+		if dto.UserLongitude == nil {
+			validationErrors.AddError(ErrLongitudeRequired)
+		} else if *dto.UserLongitude < -180 || *dto.UserLongitude > 180 {
+			validationErrors.AddError(ErrLongitudeInvalid)
+		}
+	}
+
+	// Validate max distance if provided
+	if dto.MaxDistanceMeters != nil {
+		if *dto.MaxDistanceMeters <= 0 {
+			validationErrors.AddError(ErrMaxDistanceInvalid)
+		}
+	}
+
 	if validationErrors.HasErrors() {
 		return validationErrors
 	}
@@ -48,8 +73,11 @@ func (dto *CreateAttendanceDTO) Validate() error {
 }
 
 type UpdateAttendanceDTO struct {
-	Status AttendanceStatus `json:"status,omitempty"`
-	Date   *time.Time       `json:"date,omitempty"`
+	Status            AttendanceStatus `json:"status,omitempty"`
+	Date              *time.Time       `json:"date,omitempty"`
+	UserLatitude      *float64         `json:"userLatitude,omitempty"`
+	UserLongitude     *float64         `json:"userLongitude,omitempty"`
+	MaxDistanceMeters *int             `json:"maxDistanceMeters,omitempty"`
 }
 
 func (dto *UpdateAttendanceDTO) Validate() error {
@@ -68,6 +96,26 @@ func (dto *UpdateAttendanceDTO) Validate() error {
 			validationErrors.AddError(ErrDateRequired)
 		} else if dto.Date.After(time.Now()) {
 			validationErrors.AddError(ErrDateCannotBeFuture)
+		}
+	}
+
+	// Validate location coordinates if provided
+	if dto.UserLatitude != nil {
+		if *dto.UserLatitude < -90 || *dto.UserLatitude > 90 {
+			validationErrors.AddError(ErrLatitudeInvalid)
+		}
+	}
+
+	if dto.UserLongitude != nil {
+		if *dto.UserLongitude < -180 || *dto.UserLongitude > 180 {
+			validationErrors.AddError(ErrLongitudeInvalid)
+		}
+	}
+
+	// Validate max distance if provided
+	if dto.MaxDistanceMeters != nil {
+		if *dto.MaxDistanceMeters <= 0 {
+			validationErrors.AddError(ErrMaxDistanceInvalid)
 		}
 	}
 

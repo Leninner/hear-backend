@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,17 +18,25 @@ INSERT INTO attendance (
     student_id,
     class_schedule_id,
     status,
-    date
+    date,
+    user_latitude,
+    user_longitude,
+    distance_meters,
+    max_distance_meters
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
 `
 
 type CreateAttendanceParams struct {
-	StudentID       uuid.UUID        `json:"student_id"`
-	ClassScheduleID uuid.UUID        `json:"class_schedule_id"`
-	Status          AttendanceStatus `json:"status"`
-	Date            time.Time        `json:"date"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	ClassScheduleID   uuid.UUID        `json:"class_schedule_id"`
+	Status            AttendanceStatus `json:"status"`
+	Date              time.Time        `json:"date"`
+	UserLatitude      sql.NullString   `json:"user_latitude"`
+	UserLongitude     sql.NullString   `json:"user_longitude"`
+	DistanceMeters    sql.NullString   `json:"distance_meters"`
+	MaxDistanceMeters sql.NullInt32    `json:"max_distance_meters"`
 }
 
 func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error) {
@@ -36,6 +45,10 @@ func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendancePara
 		arg.ClassScheduleID,
 		arg.Status,
 		arg.Date,
+		arg.UserLatitude,
+		arg.UserLongitude,
+		arg.DistanceMeters,
+		arg.MaxDistanceMeters,
 	)
 	var i Attendance
 	err := row.Scan(
@@ -46,12 +59,16 @@ func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendancePara
 		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UserLatitude,
+		&i.UserLongitude,
+		&i.DistanceMeters,
+		&i.MaxDistanceMeters,
 	)
 	return i, err
 }
 
 const getAttendanceByClassScheduleID = `-- name: GetAttendanceByClassScheduleID :many
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
 WHERE class_schedule_id = $1
 AND date = $2
 `
@@ -78,6 +95,10 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 			&i.Date,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.UserLatitude,
+			&i.UserLongitude,
+			&i.DistanceMeters,
+			&i.MaxDistanceMeters,
 		); err != nil {
 			return nil, err
 		}
@@ -93,7 +114,7 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 }
 
 const getAttendanceByID = `-- name: GetAttendanceByID :one
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
 WHERE id = $1 LIMIT 1
 `
 
@@ -108,12 +129,16 @@ func (q *Queries) GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendan
 		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UserLatitude,
+		&i.UserLongitude,
+		&i.DistanceMeters,
+		&i.MaxDistanceMeters,
 	)
 	return i, err
 }
 
 const getAttendanceByStudentID = `-- name: GetAttendanceByStudentID :many
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at FROM attendance
+SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
 WHERE student_id = $1
 AND date BETWEEN $2 AND $3
 `
@@ -141,6 +166,10 @@ func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanc
 			&i.Date,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.UserLatitude,
+			&i.UserLongitude,
+			&i.DistanceMeters,
+			&i.MaxDistanceMeters,
 		); err != nil {
 			return nil, err
 		}
@@ -159,18 +188,33 @@ const updateAttendance = `-- name: UpdateAttendance :one
 UPDATE attendance
 SET
     status = COALESCE($2, status),
+    user_latitude = COALESCE($3, user_latitude),
+    user_longitude = COALESCE($4, user_longitude),
+    distance_meters = COALESCE($5, distance_meters),
+    max_distance_meters = COALESCE($6, max_distance_meters),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at
+RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
 `
 
 type UpdateAttendanceParams struct {
-	ID     uuid.UUID        `json:"id"`
-	Status AttendanceStatus `json:"status"`
+	ID                uuid.UUID        `json:"id"`
+	Status            AttendanceStatus `json:"status"`
+	UserLatitude      sql.NullString   `json:"user_latitude"`
+	UserLongitude     sql.NullString   `json:"user_longitude"`
+	DistanceMeters    sql.NullString   `json:"distance_meters"`
+	MaxDistanceMeters sql.NullInt32    `json:"max_distance_meters"`
 }
 
 func (q *Queries) UpdateAttendance(ctx context.Context, arg UpdateAttendanceParams) (Attendance, error) {
-	row := q.queryRow(ctx, q.updateAttendanceStmt, updateAttendance, arg.ID, arg.Status)
+	row := q.queryRow(ctx, q.updateAttendanceStmt, updateAttendance,
+		arg.ID,
+		arg.Status,
+		arg.UserLatitude,
+		arg.UserLongitude,
+		arg.DistanceMeters,
+		arg.MaxDistanceMeters,
+	)
 	var i Attendance
 	err := row.Scan(
 		&i.ID,
@@ -180,6 +224,10 @@ func (q *Queries) UpdateAttendance(ctx context.Context, arg UpdateAttendancePara
 		&i.Date,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.UserLatitude,
+		&i.UserLongitude,
+		&i.DistanceMeters,
+		&i.MaxDistanceMeters,
 	)
 	return i, err
 }

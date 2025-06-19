@@ -100,13 +100,17 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 }
 
 type Attendance struct {
-	ID              uuid.UUID        `json:"id"`
-	StudentID       uuid.UUID        `json:"student_id"`
-	ClassScheduleID uuid.UUID        `json:"class_schedule_id"`
-	Status          AttendanceStatus `json:"status"`
-	Date            time.Time        `json:"date"`
-	CreatedAt       sql.NullTime     `json:"created_at"`
-	UpdatedAt       sql.NullTime     `json:"updated_at"`
+	ID                uuid.UUID        `json:"id"`
+	StudentID         uuid.UUID        `json:"student_id"`
+	ClassScheduleID   uuid.UUID        `json:"class_schedule_id"`
+	Status            AttendanceStatus `json:"status"`
+	Date              time.Time        `json:"date"`
+	CreatedAt         sql.NullTime     `json:"created_at"`
+	UpdatedAt         sql.NullTime     `json:"updated_at"`
+	UserLatitude      sql.NullString   `json:"user_latitude"`
+	UserLongitude     sql.NullString   `json:"user_longitude"`
+	DistanceMeters    sql.NullString   `json:"distance_meters"`
+	MaxDistanceMeters sql.NullInt32    `json:"max_distance_meters"`
 }
 
 type ClassSchedule struct {

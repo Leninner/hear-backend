@@ -92,6 +92,12 @@ var (
 	ErrStatusInvalid          = "status must be one of: present, absent, late"
 	ErrDateRequired           = "date field is required and cannot be empty"
 	ErrDateCannotBeFuture     = "date cannot be in the future"
+	ErrLatitudeRequired       = "latitude is required when longitude is provided"
+	ErrLatitudeInvalid        = "latitude must be between -90 and 90 degrees"
+	ErrLongitudeRequired      = "longitude is required when latitude is provided"
+	ErrLongitudeInvalid       = "longitude must be between -180 and 180 degrees"
+	ErrMaxDistanceInvalid     = "max distance must be greater than 0"
+	ErrDistanceTooFar         = "user is too far from the classroom location"
 	ErrAttendanceExists       = NewConflictError("attendance record already exists for this student, class schedule, and date")
 	ErrAttendanceNotFound     = NewNotFoundError("attendance record not found")
 	ErrInvalidID              = NewValidationError("invalid attendance ID format")
