@@ -2,6 +2,7 @@ package di
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	attendance "github.com/leninner/hear-backend/internal/attendance"
 	attendanceApp "github.com/leninner/hear-backend/internal/attendance/application"
 	auth "github.com/leninner/hear-backend/internal/auth"
@@ -39,6 +40,15 @@ func NewContainer(db *db.Queries) *Container {
 	app := fiber.New(fiber.Config{
 		AppName: "Hear Backend",
 	})
+	
+	// Configure CORS middleware
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowMethods:     "*",
+		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With",
+		AllowCredentials: true,
+		ExposeHeaders:    "Content-Length",
+	}))
 	
 	// SHARED MODULES
 	docsHandler := docsApp.NewDocsHandler()
