@@ -14,25 +14,25 @@ import (
 const createCourseSection = `-- name: CreateCourseSection :one
 INSERT INTO course_sections (
     course_id,
-    section_number,
+    name,
     teacher_id,
     max_students
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, course_id, section_number, teacher_id, max_students, created_at, updated_at
+) RETURNING id, course_id, teacher_id, max_students, created_at, updated_at, name
 `
 
 type CreateCourseSectionParams struct {
-	CourseID      uuid.UUID `json:"course_id"`
-	SectionNumber int32     `json:"section_number"`
-	TeacherID     uuid.UUID `json:"teacher_id"`
-	MaxStudents   int32     `json:"max_students"`
+	CourseID    uuid.UUID `json:"course_id"`
+	Name        string    `json:"name"`
+	TeacherID   uuid.UUID `json:"teacher_id"`
+	MaxStudents int32     `json:"max_students"`
 }
 
 func (q *Queries) CreateCourseSection(ctx context.Context, arg CreateCourseSectionParams) (CourseSection, error) {
 	row := q.queryRow(ctx, q.createCourseSectionStmt, createCourseSection,
 		arg.CourseID,
-		arg.SectionNumber,
+		arg.Name,
 		arg.TeacherID,
 		arg.MaxStudents,
 	)
@@ -40,11 +40,11 @@ func (q *Queries) CreateCourseSection(ctx context.Context, arg CreateCourseSecti
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
-		&i.SectionNumber,
 		&i.TeacherID,
 		&i.MaxStudents,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Name,
 	)
 	return i, err
 }
@@ -60,7 +60,7 @@ func (q *Queries) DeleteCourseSection(ctx context.Context, id uuid.UUID) error {
 }
 
 const getCourseSectionByID = `-- name: GetCourseSectionByID :one
-SELECT id, course_id, section_number, teacher_id, max_students, created_at, updated_at FROM course_sections
+SELECT id, course_id, teacher_id, max_students, created_at, updated_at, name FROM course_sections
 WHERE id = $1 LIMIT 1
 `
 
@@ -70,17 +70,17 @@ func (q *Queries) GetCourseSectionByID(ctx context.Context, id uuid.UUID) (Cours
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
-		&i.SectionNumber,
 		&i.TeacherID,
 		&i.MaxStudents,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Name,
 	)
 	return i, err
 }
 
 const getCourseSectionsByCourseID = `-- name: GetCourseSectionsByCourseID :many
-SELECT id, course_id, section_number, teacher_id, max_students, created_at, updated_at FROM course_sections
+SELECT id, course_id, teacher_id, max_students, created_at, updated_at, name FROM course_sections
 WHERE course_id = $1
 `
 
@@ -96,11 +96,11 @@ func (q *Queries) GetCourseSectionsByCourseID(ctx context.Context, courseID uuid
 		if err := rows.Scan(
 			&i.ID,
 			&i.CourseID,
-			&i.SectionNumber,
 			&i.TeacherID,
 			&i.MaxStudents,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Name,
 		); err != nil {
 			return nil, err
 		}
@@ -116,7 +116,7 @@ func (q *Queries) GetCourseSectionsByCourseID(ctx context.Context, courseID uuid
 }
 
 const getCourseSectionsByTeacherID = `-- name: GetCourseSectionsByTeacherID :many
-SELECT id, course_id, section_number, teacher_id, max_students, created_at, updated_at FROM course_sections
+SELECT id, course_id, teacher_id, max_students, created_at, updated_at, name FROM course_sections
 WHERE teacher_id = $1
 `
 
@@ -132,11 +132,11 @@ func (q *Queries) GetCourseSectionsByTeacherID(ctx context.Context, teacherID uu
 		if err := rows.Scan(
 			&i.ID,
 			&i.CourseID,
-			&i.SectionNumber,
 			&i.TeacherID,
 			&i.MaxStudents,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Name,
 		); err != nil {
 			return nil, err
 		}
@@ -154,25 +154,25 @@ func (q *Queries) GetCourseSectionsByTeacherID(ctx context.Context, teacherID uu
 const updateCourseSection = `-- name: UpdateCourseSection :one
 UPDATE course_sections
 SET
-    section_number = COALESCE($2, section_number),
+    name = COALESCE($2, name),
     teacher_id = COALESCE($3, teacher_id),
     max_students = COALESCE($4, max_students),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, course_id, section_number, teacher_id, max_students, created_at, updated_at
+RETURNING id, course_id, teacher_id, max_students, created_at, updated_at, name
 `
 
 type UpdateCourseSectionParams struct {
-	ID            uuid.UUID `json:"id"`
-	SectionNumber int32     `json:"section_number"`
-	TeacherID     uuid.UUID `json:"teacher_id"`
-	MaxStudents   int32     `json:"max_students"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	TeacherID   uuid.UUID `json:"teacher_id"`
+	MaxStudents int32     `json:"max_students"`
 }
 
 func (q *Queries) UpdateCourseSection(ctx context.Context, arg UpdateCourseSectionParams) (CourseSection, error) {
 	row := q.queryRow(ctx, q.updateCourseSectionStmt, updateCourseSection,
 		arg.ID,
-		arg.SectionNumber,
+		arg.Name,
 		arg.TeacherID,
 		arg.MaxStudents,
 	)
@@ -180,11 +180,11 @@ func (q *Queries) UpdateCourseSection(ctx context.Context, arg UpdateCourseSecti
 	err := row.Scan(
 		&i.ID,
 		&i.CourseID,
-		&i.SectionNumber,
 		&i.TeacherID,
 		&i.MaxStudents,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Name,
 	)
 	return i, err
 }

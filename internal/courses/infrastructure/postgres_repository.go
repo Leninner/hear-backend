@@ -2,11 +2,18 @@ package infrastructure
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/courses/domain"
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
 )
+
+// TODO: After running the migration (000006_fix_courses_schema.up.sql),
+// regenerate SQLC code with: sqlc generate
+// Then update this repository to use the proper field names:
+// - Replace Code with Semester in CreateCourseParams and UpdateCourseParams
+// - Use GetCoursesBySemester query instead of filtering in Go
 
 type PostgresRepository struct {
 	queries *db.Queries
@@ -24,7 +31,7 @@ func (r *PostgresRepository) Create(course *domain.Course) error {
 	params := db.CreateCourseParams{
 		FacultyID: course.FacultyID,
 		Name:      course.Name,
-		Code:      course.Description,
+		Semester:  sql.NullString{String: course.Semester, Valid: true},
 	}
 
 	createdCourse, err := r.queries.CreateCourse(ctx, params)
@@ -52,10 +59,10 @@ func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Course, error) {
 	}
 
 	domainCourse := &domain.Course{
-		ID:          course.ID,
-		Name:        course.Name,
-		Description: course.Code,
-		FacultyID:   course.FacultyID,
+		ID:        course.ID,
+		Name:      course.Name,
+		FacultyID: course.FacultyID,
+		Semester:  course.Semester.String,
 	}
 	if course.CreatedAt.Valid {
 		domainCourse.CreatedAt = course.CreatedAt.Time
@@ -78,10 +85,10 @@ func (r *PostgresRepository) GetAll() ([]*domain.Course, error) {
 	var domainCourses []*domain.Course
 	for _, course := range courses {
 		domainCourse := &domain.Course{
-			ID:          course.ID,
-			Name:        course.Name,
-			Description: course.Code,
-			FacultyID:   course.FacultyID,
+			ID:        course.ID,
+			Name:      course.Name,
+			FacultyID: course.FacultyID,
+			Semester:  course.Semester.String,
 		}
 		if course.CreatedAt.Valid {
 			domainCourse.CreatedAt = course.CreatedAt.Time
@@ -95,10 +102,10 @@ func (r *PostgresRepository) GetAll() ([]*domain.Course, error) {
 	return domainCourses, nil
 }
 
-func (r *PostgresRepository) GetByTeacherID(teacherID uuid.UUID) ([]*domain.Course, error) {
+func (r *PostgresRepository) GetByFacultyID(facultyID uuid.UUID) ([]*domain.Course, error) {
 	ctx := context.Background()
 
-	courses, err := r.queries.GetCoursesByFacultyID(ctx, teacherID)
+	courses, err := r.queries.GetCoursesByFacultyID(ctx, facultyID)
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +113,39 @@ func (r *PostgresRepository) GetByTeacherID(teacherID uuid.UUID) ([]*domain.Cour
 	var domainCourses []*domain.Course
 	for _, course := range courses {
 		domainCourse := &domain.Course{
-			ID:          course.ID,
-			Name:        course.Name,
-			Description: course.Code,
-			FacultyID:   course.FacultyID,
+			ID:        course.ID,
+			Name:      course.Name,
+			FacultyID: course.FacultyID,
+			Semester:  course.Semester.String,
+		}
+		if course.CreatedAt.Valid {
+			domainCourse.CreatedAt = course.CreatedAt.Time
+		}
+		if course.UpdatedAt.Valid {
+			domainCourse.UpdatedAt = course.UpdatedAt.Time
+		}
+		domainCourses = append(domainCourses, domainCourse)
+	}
+
+	return domainCourses, nil
+}
+
+func (r *PostgresRepository) GetBySemester(semester string) ([]*domain.Course, error) {
+	ctx := context.Background()
+
+	params := sql.NullString{String: semester, Valid: true}
+	courses, err := r.queries.GetCoursesBySemester(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	var domainCourses []*domain.Course
+	for _, course := range courses {
+		domainCourse := &domain.Course{
+			ID:        course.ID,
+			Name:      course.Name,
+			FacultyID: course.FacultyID,
+			Semester:  course.Semester.String,
 		}
 		if course.CreatedAt.Valid {
 			domainCourse.CreatedAt = course.CreatedAt.Time
@@ -127,9 +163,9 @@ func (r *PostgresRepository) Update(course *domain.Course) error {
 	ctx := context.Background()
 
 	params := db.UpdateCourseParams{
-		ID:   course.ID,
-		Name: course.Name,
-		Code: course.Description,
+		ID:       course.ID,
+		Name:     course.Name,
+		Semester: sql.NullString{String: course.Semester, Valid: true},
 	}
 
 	updatedCourse, err := r.queries.UpdateCourse(ctx, params)

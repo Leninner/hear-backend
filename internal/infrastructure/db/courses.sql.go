@@ -7,97 +7,39 @@ package db
 
 import (
 	"context"
-	"time"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
-
-const createClassSchedule = `-- name: CreateClassSchedule :one
-INSERT INTO class_schedules (
-    course_id,
-    day_of_week,
-    start_time,
-    end_time,
-    classroom_id
-) VALUES (
-    $1, $2, $3, $4, $5
-) RETURNING id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at
-`
-
-type CreateClassScheduleParams struct {
-	CourseID    uuid.UUID `json:"course_id"`
-	DayOfWeek   int32     `json:"day_of_week"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	ClassroomID uuid.UUID `json:"classroom_id"`
-}
-
-func (q *Queries) CreateClassSchedule(ctx context.Context, arg CreateClassScheduleParams) (ClassSchedule, error) {
-	row := q.queryRow(ctx, q.createClassScheduleStmt, createClassSchedule,
-		arg.CourseID,
-		arg.DayOfWeek,
-		arg.StartTime,
-		arg.EndTime,
-		arg.ClassroomID,
-	)
-	var i ClassSchedule
-	err := row.Scan(
-		&i.ID,
-		&i.CourseID,
-		&i.SectionID,
-		&i.DayOfWeek,
-		&i.StartTime,
-		&i.EndTime,
-		&i.ClassroomID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
 
 const createCourse = `-- name: CreateCourse :one
 INSERT INTO courses (
     faculty_id,
     name,
-    code
+    semester
 ) VALUES (
     $1, $2, $3
-) RETURNING id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at
+) RETURNING id, faculty_id, name, semester, created_at, updated_at
 `
 
 type CreateCourseParams struct {
-	FacultyID uuid.UUID `json:"faculty_id"`
-	Name      string    `json:"name"`
-	Code      string    `json:"code"`
+	FacultyID uuid.UUID      `json:"faculty_id"`
+	Name      string         `json:"name"`
+	Semester  sql.NullString `json:"semester"`
 }
 
 func (q *Queries) CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error) {
-	row := q.queryRow(ctx, q.createCourseStmt, createCourse, arg.FacultyID, arg.Name, arg.Code)
+	row := q.queryRow(ctx, q.createCourseStmt, createCourse, arg.FacultyID, arg.Name, arg.Semester)
 	var i Course
 	err := row.Scan(
 		&i.ID,
 		&i.FacultyID,
 		&i.Name,
-		&i.Code,
-		&i.Description,
-		&i.Credits,
 		&i.Semester,
-		&i.AcademicYear,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
-}
-
-const deleteClassSchedule = `-- name: DeleteClassSchedule :exec
-DELETE FROM class_schedules
-WHERE id = $1
-`
-
-func (q *Queries) DeleteClassSchedule(ctx context.Context, id uuid.UUID) error {
-	_, err := q.exec(ctx, q.deleteClassScheduleStmt, deleteClassSchedule, id)
-	return err
 }
 
 const deleteCourse = `-- name: DeleteCourse :exec
@@ -110,124 +52,8 @@ func (q *Queries) DeleteCourse(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
-const getClassScheduleByID = `-- name: GetClassScheduleByID :one
-SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
-WHERE id = $1 LIMIT 1
-`
-
-func (q *Queries) GetClassScheduleByID(ctx context.Context, id uuid.UUID) (ClassSchedule, error) {
-	row := q.queryRow(ctx, q.getClassScheduleByIDStmt, getClassScheduleByID, id)
-	var i ClassSchedule
-	err := row.Scan(
-		&i.ID,
-		&i.CourseID,
-		&i.SectionID,
-		&i.DayOfWeek,
-		&i.StartTime,
-		&i.EndTime,
-		&i.ClassroomID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const getClassSchedulesByClassroomAndTime = `-- name: GetClassSchedulesByClassroomAndTime :many
-SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
-WHERE classroom_id = $1
-AND day_of_week = $2
-AND (
-    (start_time <= $3 AND end_time > $3) OR
-    (start_time < $4 AND end_time >= $4) OR
-    (start_time >= $3 AND end_time <= $4)
-)
-`
-
-type GetClassSchedulesByClassroomAndTimeParams struct {
-	ClassroomID uuid.UUID `json:"classroom_id"`
-	DayOfWeek   int32     `json:"day_of_week"`
-	StartTime   time.Time `json:"start_time"`
-	StartTime_2 time.Time `json:"start_time_2"`
-}
-
-func (q *Queries) GetClassSchedulesByClassroomAndTime(ctx context.Context, arg GetClassSchedulesByClassroomAndTimeParams) ([]ClassSchedule, error) {
-	rows, err := q.query(ctx, q.getClassSchedulesByClassroomAndTimeStmt, getClassSchedulesByClassroomAndTime,
-		arg.ClassroomID,
-		arg.DayOfWeek,
-		arg.StartTime,
-		arg.StartTime_2,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ClassSchedule{}
-	for rows.Next() {
-		var i ClassSchedule
-		if err := rows.Scan(
-			&i.ID,
-			&i.CourseID,
-			&i.SectionID,
-			&i.DayOfWeek,
-			&i.StartTime,
-			&i.EndTime,
-			&i.ClassroomID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getClassSchedulesByCourseID = `-- name: GetClassSchedulesByCourseID :many
-SELECT id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at FROM class_schedules
-WHERE course_id = $1
-`
-
-func (q *Queries) GetClassSchedulesByCourseID(ctx context.Context, courseID uuid.UUID) ([]ClassSchedule, error) {
-	rows, err := q.query(ctx, q.getClassSchedulesByCourseIDStmt, getClassSchedulesByCourseID, courseID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ClassSchedule{}
-	for rows.Next() {
-		var i ClassSchedule
-		if err := rows.Scan(
-			&i.ID,
-			&i.CourseID,
-			&i.SectionID,
-			&i.DayOfWeek,
-			&i.StartTime,
-			&i.EndTime,
-			&i.ClassroomID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getCourseByID = `-- name: GetCourseByID :one
-SELECT id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at FROM courses
+SELECT id, faculty_id, name, semester, created_at, updated_at FROM courses
 WHERE id = $1 LIMIT 1
 `
 
@@ -238,12 +64,7 @@ func (q *Queries) GetCourseByID(ctx context.Context, id uuid.UUID) (Course, erro
 		&i.ID,
 		&i.FacultyID,
 		&i.Name,
-		&i.Code,
-		&i.Description,
-		&i.Credits,
 		&i.Semester,
-		&i.AcademicYear,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -251,7 +72,7 @@ func (q *Queries) GetCourseByID(ctx context.Context, id uuid.UUID) (Course, erro
 }
 
 const getCoursesByFacultyID = `-- name: GetCoursesByFacultyID :many
-SELECT id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at FROM courses
+SELECT id, faculty_id, name, semester, created_at, updated_at FROM courses
 WHERE faculty_id = $1
 `
 
@@ -268,12 +89,7 @@ func (q *Queries) GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID
 			&i.ID,
 			&i.FacultyID,
 			&i.Name,
-			&i.Code,
-			&i.Description,
-			&i.Credits,
 			&i.Semester,
-			&i.AcademicYear,
-			&i.IsActive,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -290,78 +106,65 @@ func (q *Queries) GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID
 	return items, nil
 }
 
-const updateClassSchedule = `-- name: UpdateClassSchedule :one
-UPDATE class_schedules
-SET
-    day_of_week = COALESCE($2, day_of_week),
-    start_time = COALESCE($3, start_time),
-    end_time = COALESCE($4, end_time),
-    classroom_id = COALESCE($5, classroom_id),
-    updated_at = CURRENT_TIMESTAMP
-WHERE id = $1
-RETURNING id, course_id, section_id, day_of_week, start_time, end_time, classroom_id, created_at, updated_at
+const getCoursesBySemester = `-- name: GetCoursesBySemester :many
+SELECT id, faculty_id, name, semester, created_at, updated_at FROM courses
+WHERE semester = $1
 `
 
-type UpdateClassScheduleParams struct {
-	ID          uuid.UUID `json:"id"`
-	DayOfWeek   int32     `json:"day_of_week"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	ClassroomID uuid.UUID `json:"classroom_id"`
-}
-
-func (q *Queries) UpdateClassSchedule(ctx context.Context, arg UpdateClassScheduleParams) (ClassSchedule, error) {
-	row := q.queryRow(ctx, q.updateClassScheduleStmt, updateClassSchedule,
-		arg.ID,
-		arg.DayOfWeek,
-		arg.StartTime,
-		arg.EndTime,
-		arg.ClassroomID,
-	)
-	var i ClassSchedule
-	err := row.Scan(
-		&i.ID,
-		&i.CourseID,
-		&i.SectionID,
-		&i.DayOfWeek,
-		&i.StartTime,
-		&i.EndTime,
-		&i.ClassroomID,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) GetCoursesBySemester(ctx context.Context, semester sql.NullString) ([]Course, error) {
+	rows, err := q.query(ctx, q.getCoursesBySemesterStmt, getCoursesBySemester, semester)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Course{}
+	for rows.Next() {
+		var i Course
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacultyID,
+			&i.Name,
+			&i.Semester,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const updateCourse = `-- name: UpdateCourse :one
 UPDATE courses
 SET
     name = COALESCE($2, name),
-    code = COALESCE($3, code),
+    semester = COALESCE($3, semester),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, faculty_id, name, code, description, credits, semester, academic_year, is_active, created_at, updated_at
+RETURNING id, faculty_id, name, semester, created_at, updated_at
 `
 
 type UpdateCourseParams struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
-	Code string    `json:"code"`
+	ID       uuid.UUID      `json:"id"`
+	Name     string         `json:"name"`
+	Semester sql.NullString `json:"semester"`
 }
 
 func (q *Queries) UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error) {
-	row := q.queryRow(ctx, q.updateCourseStmt, updateCourse, arg.ID, arg.Name, arg.Code)
+	row := q.queryRow(ctx, q.updateCourseStmt, updateCourse, arg.ID, arg.Name, arg.Semester)
 	var i Course
 	err := row.Scan(
 		&i.ID,
 		&i.FacultyID,
 		&i.Name,
-		&i.Code,
-		&i.Description,
-		&i.Credits,
 		&i.Semester,
-		&i.AcademicYear,
-		&i.IsActive,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

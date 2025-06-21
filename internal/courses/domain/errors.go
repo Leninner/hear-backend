@@ -90,6 +90,17 @@ var (
 	ErrDescriptionRequired = "description field is required and cannot be empty"
 	ErrTeacherIDRequired   = "teacher ID field is required and cannot be empty"
 	ErrFacultyIDRequired   = "faculty ID field is required and cannot be empty"
+	ErrSemesterRequired    = "semester field is required and cannot be empty"
+	ErrCourseIDRequired    = "course ID field is required and cannot be empty"
+	ErrSectionIDRequired   = "section ID field is required and cannot be empty"
+	ErrClassroomIDRequired = "classroom ID field is required and cannot be empty"
+	ErrSectionNameRequired = "section name field is required and cannot be empty"
+	ErrMaxStudentsInvalid  = "max students must be greater than 0"
+	ErrDayOfWeekInvalid    = "day of week must be between 0 and 6"
+	ErrStartTimeRequired   = "start time field is required and cannot be empty"
+	ErrEndTimeRequired     = "end time field is required and cannot be empty"
+	ErrStartTimeInvalid    = "start time must be in HH:MM format"
+	ErrEndTimeInvalid      = "end time must be in HH:MM format"
 	ErrCourseNotFound      = NewNotFoundError("course not found")
 	ErrInvalidID          = NewValidationError("invalid course ID format")
 ) 

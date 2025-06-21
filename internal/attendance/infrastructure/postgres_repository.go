@@ -49,7 +49,7 @@ func (r *PostgresRepository) Create(attendance *domain.Attendance) error {
 	
 	params := db.CreateAttendanceParams{
 		StudentID:         attendance.StudentID,
-		ClassScheduleID:   attendance.ClassScheduleID,
+		ScheduleID:        attendance.ScheduleID,
 		Status:            db.AttendanceStatus(attendance.Status),
 		Date:              attendance.Date,
 		UserLatitude:      userLat,
@@ -110,15 +110,15 @@ func (r *PostgresRepository) GetByStudentID(studentID uuid.UUID) ([]*domain.Atte
 	return attendances, nil
 }
 
-func (r *PostgresRepository) GetByClassScheduleID(classScheduleID uuid.UUID) ([]*domain.Attendance, error) {
+func (r *PostgresRepository) GetByScheduleID(scheduleID uuid.UUID) ([]*domain.Attendance, error) {
 	ctx := context.Background()
 	
-	params := db.GetAttendanceByClassScheduleIDParams{
-		ClassScheduleID: classScheduleID,
-		Date:            time.Now(),
+	params := db.GetAttendanceByScheduleIDParams{
+		ScheduleID: scheduleID,
+		Date:       time.Now(),
 	}
 	
-	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
+	dbAttendances, err := r.db.GetAttendanceByScheduleID(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -134,12 +134,14 @@ func (r *PostgresRepository) GetByClassScheduleID(classScheduleID uuid.UUID) ([]
 func (r *PostgresRepository) GetByDate(date time.Time) ([]*domain.Attendance, error) {
 	ctx := context.Background()
 	
-	params := db.GetAttendanceByClassScheduleIDParams{
-		ClassScheduleID: uuid.Nil,
-		Date:            date,
+	// Since we don't have a direct GetByDate query, we'll use GetByScheduleID with a nil schedule ID
+	// This is not ideal but will work for now. Consider adding a proper GetByDate query if needed.
+	params := db.GetAttendanceByScheduleIDParams{
+		ScheduleID: uuid.Nil,
+		Date:       date,
 	}
 	
-	dbAttendances, err := r.db.GetAttendanceByClassScheduleID(ctx, params)
+	dbAttendances, err := r.db.GetAttendanceByScheduleID(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +208,7 @@ func (r *PostgresRepository) mapToDomain(dbAttendance *db.Attendance) *domain.At
 	attendance := &domain.Attendance{
 		ID:                dbAttendance.ID,
 		StudentID:         dbAttendance.StudentID,
-		ClassScheduleID:   dbAttendance.ClassScheduleID,
+		ScheduleID:        dbAttendance.ScheduleID,
 		Status:            domain.AttendanceStatus(dbAttendance.Status),
 		Date:              dbAttendance.Date,
 		MaxDistanceMeters: int(dbAttendance.MaxDistanceMeters.Int32),

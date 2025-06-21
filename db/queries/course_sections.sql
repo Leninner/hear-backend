@@ -1,7 +1,7 @@
 -- name: CreateCourseSection :one
 INSERT INTO course_sections (
     course_id,
-    section_number,
+    name,
     teacher_id,
     max_students
 ) VALUES (
@@ -23,7 +23,7 @@ WHERE teacher_id = $1;
 -- name: UpdateCourseSection :one
 UPDATE course_sections
 SET
-    section_number = COALESCE($2, section_number),
+    name = COALESCE($2, name),
     teacher_id = COALESCE($3, teacher_id),
     max_students = COALESCE($4, max_students),
     updated_at = CURRENT_TIMESTAMP

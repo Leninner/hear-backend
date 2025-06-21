@@ -7,10 +7,9 @@ import (
 )
 
 type CreateCourseDTO struct {
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	TeacherID   uuid.UUID `json:"teacherId"`
-	FacultyID   uuid.UUID `json:"facultyId"`
+	Name      string    `json:"name"`
+	FacultyID uuid.UUID `json:"facultyId"`
+	Semester  string    `json:"semester"`
 }
 
 func (dto *CreateCourseDTO) Validate() error {
@@ -20,16 +19,12 @@ func (dto *CreateCourseDTO) Validate() error {
 		validationErrors.AddError(ErrNameRequired)
 	}
 
-	if strings.TrimSpace(dto.Description) == "" {
-		validationErrors.AddError(ErrDescriptionRequired)
-	}
-
-	if dto.TeacherID == uuid.Nil {
-		validationErrors.AddError(ErrTeacherIDRequired)
-	}
-
 	if dto.FacultyID == uuid.Nil {
 		validationErrors.AddError(ErrFacultyIDRequired)
+	}
+
+	if strings.TrimSpace(dto.Semester) == "" {
+		validationErrors.AddError(ErrSemesterRequired)
 	}
 
 	if validationErrors.HasErrors() {
@@ -40,8 +35,8 @@ func (dto *CreateCourseDTO) Validate() error {
 }
 
 type UpdateCourseDTO struct {
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Semester string `json:"semester,omitempty"`
 }
 
 func (dto *UpdateCourseDTO) Validate() error {
@@ -51,8 +46,8 @@ func (dto *UpdateCourseDTO) Validate() error {
 		validationErrors.AddError(ErrNameRequired)
 	}
 
-	if dto.Description != "" && strings.TrimSpace(dto.Description) == "" {
-		validationErrors.AddError(ErrDescriptionRequired)
+	if dto.Semester != "" && strings.TrimSpace(dto.Semester) == "" {
+		validationErrors.AddError(ErrSemesterRequired)
 	}
 
 	if validationErrors.HasErrors() {

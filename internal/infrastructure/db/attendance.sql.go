@@ -16,7 +16,7 @@ import (
 const createAttendance = `-- name: CreateAttendance :one
 INSERT INTO attendance (
     student_id,
-    class_schedule_id,
+    schedule_id,
     status,
     date,
     user_latitude,
@@ -25,12 +25,12 @@ INSERT INTO attendance (
     max_distance_meters
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
+) RETURNING id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
 `
 
 type CreateAttendanceParams struct {
 	StudentID         uuid.UUID        `json:"student_id"`
-	ClassScheduleID   uuid.UUID        `json:"class_schedule_id"`
+	ScheduleID        uuid.UUID        `json:"schedule_id"`
 	Status            AttendanceStatus `json:"status"`
 	Date              time.Time        `json:"date"`
 	UserLatitude      sql.NullString   `json:"user_latitude"`
@@ -42,7 +42,7 @@ type CreateAttendanceParams struct {
 func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error) {
 	row := q.queryRow(ctx, q.createAttendanceStmt, createAttendance,
 		arg.StudentID,
-		arg.ClassScheduleID,
+		arg.ScheduleID,
 		arg.Status,
 		arg.Date,
 		arg.UserLatitude,
@@ -54,7 +54,7 @@ func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendancePara
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
-		&i.ClassScheduleID,
+		&i.ScheduleID,
 		&i.Status,
 		&i.Date,
 		&i.CreatedAt,
@@ -67,19 +67,13 @@ func (q *Queries) CreateAttendance(ctx context.Context, arg CreateAttendancePara
 	return i, err
 }
 
-const getAttendanceByClassScheduleID = `-- name: GetAttendanceByClassScheduleID :many
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
-WHERE class_schedule_id = $1
-AND date = $2
+const getAttendanceByDate = `-- name: GetAttendanceByDate :many
+SELECT id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
+WHERE date = $1
 `
 
-type GetAttendanceByClassScheduleIDParams struct {
-	ClassScheduleID uuid.UUID `json:"class_schedule_id"`
-	Date            time.Time `json:"date"`
-}
-
-func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAttendanceByClassScheduleIDParams) ([]Attendance, error) {
-	rows, err := q.query(ctx, q.getAttendanceByClassScheduleIDStmt, getAttendanceByClassScheduleID, arg.ClassScheduleID, arg.Date)
+func (q *Queries) GetAttendanceByDate(ctx context.Context, date time.Time) ([]Attendance, error) {
+	rows, err := q.query(ctx, q.getAttendanceByDateStmt, getAttendanceByDate, date)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +84,7 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 		if err := rows.Scan(
 			&i.ID,
 			&i.StudentID,
-			&i.ClassScheduleID,
+			&i.ScheduleID,
 			&i.Status,
 			&i.Date,
 			&i.CreatedAt,
@@ -114,7 +108,7 @@ func (q *Queries) GetAttendanceByClassScheduleID(ctx context.Context, arg GetAtt
 }
 
 const getAttendanceByID = `-- name: GetAttendanceByID :one
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
+SELECT id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
 WHERE id = $1 LIMIT 1
 `
 
@@ -124,7 +118,7 @@ func (q *Queries) GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendan
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
-		&i.ClassScheduleID,
+		&i.ScheduleID,
 		&i.Status,
 		&i.Date,
 		&i.CreatedAt,
@@ -137,8 +131,54 @@ func (q *Queries) GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendan
 	return i, err
 }
 
+const getAttendanceByScheduleID = `-- name: GetAttendanceByScheduleID :many
+SELECT id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
+WHERE schedule_id = $1
+AND date = $2
+`
+
+type GetAttendanceByScheduleIDParams struct {
+	ScheduleID uuid.UUID `json:"schedule_id"`
+	Date       time.Time `json:"date"`
+}
+
+func (q *Queries) GetAttendanceByScheduleID(ctx context.Context, arg GetAttendanceByScheduleIDParams) ([]Attendance, error) {
+	rows, err := q.query(ctx, q.getAttendanceByScheduleIDStmt, getAttendanceByScheduleID, arg.ScheduleID, arg.Date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Attendance{}
+	for rows.Next() {
+		var i Attendance
+		if err := rows.Scan(
+			&i.ID,
+			&i.StudentID,
+			&i.ScheduleID,
+			&i.Status,
+			&i.Date,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserLatitude,
+			&i.UserLongitude,
+			&i.DistanceMeters,
+			&i.MaxDistanceMeters,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAttendanceByStudentID = `-- name: GetAttendanceByStudentID :many
-SELECT id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
+SELECT id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
 WHERE student_id = $1
 AND date BETWEEN $2 AND $3
 `
@@ -161,7 +201,7 @@ func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanc
 		if err := rows.Scan(
 			&i.ID,
 			&i.StudentID,
-			&i.ClassScheduleID,
+			&i.ScheduleID,
 			&i.Status,
 			&i.Date,
 			&i.CreatedAt,
@@ -194,7 +234,7 @@ SET
     max_distance_meters = COALESCE($6, max_distance_meters),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, student_id, class_schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
+RETURNING id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters
 `
 
 type UpdateAttendanceParams struct {
@@ -219,7 +259,7 @@ func (q *Queries) UpdateAttendance(ctx context.Context, arg UpdateAttendancePara
 	err := row.Scan(
 		&i.ID,
 		&i.StudentID,
-		&i.ClassScheduleID,
+		&i.ScheduleID,
 		&i.Status,
 		&i.Date,
 		&i.CreatedAt,

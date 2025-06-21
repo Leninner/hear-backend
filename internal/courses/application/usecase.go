@@ -20,7 +20,7 @@ func (uc *UseCase) CreateCourse(dto *domain.CreateCourseDTO) (*domain.Course, er
 		return nil, err
 	}
 
-	course := domain.NewCourse(dto.Name, dto.Description, dto.TeacherID, dto.FacultyID)
+	course := domain.NewCourse(dto.Name, dto.FacultyID, dto.Semester)
 	if err := uc.repository.Create(course); err != nil {
 		return nil, domain.NewInternalError("failed to create course in database", err)
 	}
@@ -44,10 +44,18 @@ func (uc *UseCase) GetAllCourses() ([]*domain.Course, error) {
 	return courses, nil
 }
 
-func (uc *UseCase) GetCoursesByTeacher(teacherID uuid.UUID) ([]*domain.Course, error) {
-	courses, err := uc.repository.GetByTeacherID(teacherID)
+func (uc *UseCase) GetCoursesByFaculty(facultyID uuid.UUID) ([]*domain.Course, error) {
+	courses, err := uc.repository.GetByFacultyID(facultyID)
 	if err != nil {
-		return nil, domain.NewInternalError("failed to retrieve teacher courses from database", err)
+		return nil, domain.NewInternalError("failed to retrieve faculty courses from database", err)
+	}
+	return courses, nil
+}
+
+func (uc *UseCase) GetCoursesBySemester(semester string) ([]*domain.Course, error) {
+	courses, err := uc.repository.GetBySemester(semester)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve semester courses from database", err)
 	}
 	return courses, nil
 }
@@ -65,8 +73,8 @@ func (uc *UseCase) UpdateCourse(id uuid.UUID, dto *domain.UpdateCourseDTO) error
 	if dto.Name != "" {
 		course.Name = dto.Name
 	}
-	if dto.Description != "" {
-		course.Description = dto.Description
+	if dto.Semester != "" {
+		course.Semester = dto.Semester
 	}
 
 	if err := uc.repository.Update(course); err != nil {

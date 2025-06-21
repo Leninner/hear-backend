@@ -1,7 +1,7 @@
 -- name: CreateAttendance :one
 INSERT INTO attendance (
     student_id,
-    class_schedule_id,
+    schedule_id,
     status,
     date,
     user_latitude,
@@ -21,10 +21,14 @@ SELECT * FROM attendance
 WHERE student_id = $1
 AND date BETWEEN $2 AND $3;
 
--- name: GetAttendanceByClassScheduleID :many
+-- name: GetAttendanceByScheduleID :many
 SELECT * FROM attendance
-WHERE class_schedule_id = $1
+WHERE schedule_id = $1
 AND date = $2;
+
+-- name: GetAttendanceByDate :many
+SELECT * FROM attendance
+WHERE date = $1;
 
 -- name: UpdateAttendance :one
 UPDATE attendance

@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,32 +15,30 @@ import (
 type Querier interface {
 	CleanExpiredTokens(ctx context.Context) error
 	CreateAttendance(ctx context.Context, arg CreateAttendanceParams) (Attendance, error)
-	CreateClassSchedule(ctx context.Context, arg CreateClassScheduleParams) (ClassSchedule, error)
 	CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error)
 	CreateCourse(ctx context.Context, arg CreateCourseParams) (Course, error)
 	CreateCourseSection(ctx context.Context, arg CreateCourseSectionParams) (CourseSection, error)
 	CreateFaculty(ctx context.Context, arg CreateFacultyParams) (Faculty, error)
 	CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error)
 	CreateRefreshToken(ctx context.Context, arg CreateRefreshTokenParams) (RefreshToken, error)
+	CreateSchedule(ctx context.Context, arg CreateScheduleParams) (Schedule, error)
 	CreateUniversity(ctx context.Context, name string) (University, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	DeleteClassSchedule(ctx context.Context, id uuid.UUID) error
 	DeleteClassroom(ctx context.Context, id uuid.UUID) error
 	DeleteCourse(ctx context.Context, id uuid.UUID) error
 	DeleteCourseSection(ctx context.Context, id uuid.UUID) error
 	DeleteFaculty(ctx context.Context, id uuid.UUID) error
 	DeleteQRCode(ctx context.Context, id uuid.UUID) error
 	DeleteRefreshToken(ctx context.Context, token string) error
+	DeleteSchedule(ctx context.Context, id uuid.UUID) error
 	DeleteUniversity(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
 	GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, error)
-	GetAttendanceByClassScheduleID(ctx context.Context, arg GetAttendanceByClassScheduleIDParams) ([]Attendance, error)
+	GetAttendanceByDate(ctx context.Context, date time.Time) ([]Attendance, error)
 	GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendance, error)
+	GetAttendanceByScheduleID(ctx context.Context, arg GetAttendanceByScheduleIDParams) ([]Attendance, error)
 	GetAttendanceByStudentID(ctx context.Context, arg GetAttendanceByStudentIDParams) ([]Attendance, error)
-	GetClassScheduleByID(ctx context.Context, id uuid.UUID) (ClassSchedule, error)
-	GetClassSchedulesByClassroomAndTime(ctx context.Context, arg GetClassSchedulesByClassroomAndTimeParams) ([]ClassSchedule, error)
-	GetClassSchedulesByCourseID(ctx context.Context, courseID uuid.UUID) ([]ClassSchedule, error)
 	GetClassroomByID(ctx context.Context, id uuid.UUID) (Classroom, error)
 	GetClassroomByName(ctx context.Context, name string) (Classroom, error)
 	GetClassroomsByBuilding(ctx context.Context, building string) ([]Classroom, error)
@@ -48,6 +48,7 @@ type Querier interface {
 	GetCourseSectionsByCourseID(ctx context.Context, courseID uuid.UUID) ([]CourseSection, error)
 	GetCourseSectionsByTeacherID(ctx context.Context, teacherID uuid.UUID) ([]CourseSection, error)
 	GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID) ([]Course, error)
+	GetCoursesBySemester(ctx context.Context, semester sql.NullString) ([]Course, error)
 	GetFacultiesByUniversityID(ctx context.Context, universityID uuid.UUID) ([]Faculty, error)
 	GetFacultyByID(ctx context.Context, id uuid.UUID) (Faculty, error)
 	GetFacultyByName(ctx context.Context, name string) (Faculty, error)
@@ -55,6 +56,11 @@ type Querier interface {
 	GetQRCodeByCode(ctx context.Context, code string) (QrCode, error)
 	GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) ([]QrCode, error)
 	GetRefreshToken(ctx context.Context, token string) (uuid.UUID, error)
+	GetScheduleByID(ctx context.Context, id uuid.UUID) (Schedule, error)
+	GetSchedulesByClassroomAndTime(ctx context.Context, arg GetSchedulesByClassroomAndTimeParams) ([]Schedule, error)
+	GetSchedulesByClassroomID(ctx context.Context, classroomID uuid.UUID) ([]Schedule, error)
+	GetSchedulesByCourseID(ctx context.Context, courseID uuid.UUID) ([]Schedule, error)
+	GetSchedulesBySectionID(ctx context.Context, sectionID uuid.UUID) ([]Schedule, error)
 	GetUniversityByID(ctx context.Context, id uuid.UUID) (University, error)
 	GetUniversityByName(ctx context.Context, name string) (University, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
@@ -63,11 +69,11 @@ type Querier interface {
 	ListUniversities(ctx context.Context) ([]University, error)
 	ListUsers(ctx context.Context) ([]User, error)
 	UpdateAttendance(ctx context.Context, arg UpdateAttendanceParams) (Attendance, error)
-	UpdateClassSchedule(ctx context.Context, arg UpdateClassScheduleParams) (ClassSchedule, error)
 	UpdateClassroom(ctx context.Context, arg UpdateClassroomParams) (Classroom, error)
 	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
 	UpdateCourseSection(ctx context.Context, arg UpdateCourseSectionParams) (CourseSection, error)
 	UpdateFaculty(ctx context.Context, arg UpdateFacultyParams) (Faculty, error)
+	UpdateSchedule(ctx context.Context, arg UpdateScheduleParams) (Schedule, error)
 	UpdateUniversity(ctx context.Context, arg UpdateUniversityParams) (University, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }

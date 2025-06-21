@@ -62,7 +62,7 @@ func (uc *UseCase) GetStudentAttendance(studentID uuid.UUID) ([]*domain.Attendan
 }
 
 func (uc *UseCase) GetClassScheduleAttendance(classScheduleID uuid.UUID) ([]*domain.Attendance, error) {
-	return uc.repository.GetByClassScheduleID(classScheduleID)
+	return uc.repository.GetByScheduleID(classScheduleID)
 }
 
 func (uc *UseCase) GetAttendanceByDate(date time.Time) ([]*domain.Attendance, error) {

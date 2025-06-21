@@ -102,7 +102,7 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 type Attendance struct {
 	ID                uuid.UUID        `json:"id"`
 	StudentID         uuid.UUID        `json:"student_id"`
-	ClassScheduleID   uuid.UUID        `json:"class_schedule_id"`
+	ScheduleID        uuid.UUID        `json:"schedule_id"`
 	Status            AttendanceStatus `json:"status"`
 	Date              time.Time        `json:"date"`
 	CreatedAt         sql.NullTime     `json:"created_at"`
@@ -111,18 +111,6 @@ type Attendance struct {
 	UserLongitude     sql.NullString   `json:"user_longitude"`
 	DistanceMeters    sql.NullString   `json:"distance_meters"`
 	MaxDistanceMeters sql.NullInt32    `json:"max_distance_meters"`
-}
-
-type ClassSchedule struct {
-	ID          uuid.UUID    `json:"id"`
-	CourseID    uuid.UUID    `json:"course_id"`
-	SectionID   uuid.UUID    `json:"section_id"`
-	DayOfWeek   int32        `json:"day_of_week"`
-	StartTime   time.Time    `json:"start_time"`
-	EndTime     time.Time    `json:"end_time"`
-	ClassroomID uuid.UUID    `json:"classroom_id"`
-	CreatedAt   sql.NullTime `json:"created_at"`
-	UpdatedAt   sql.NullTime `json:"updated_at"`
 }
 
 type Classroom struct {
@@ -138,27 +126,22 @@ type Classroom struct {
 }
 
 type Course struct {
-	ID           uuid.UUID      `json:"id"`
-	FacultyID    uuid.UUID      `json:"faculty_id"`
-	Name         string         `json:"name"`
-	Code         string         `json:"code"`
-	Description  sql.NullString `json:"description"`
-	Credits      int32          `json:"credits"`
-	Semester     sql.NullString `json:"semester"`
-	AcademicYear sql.NullString `json:"academic_year"`
-	IsActive     sql.NullBool   `json:"is_active"`
-	CreatedAt    sql.NullTime   `json:"created_at"`
-	UpdatedAt    sql.NullTime   `json:"updated_at"`
+	ID        uuid.UUID      `json:"id"`
+	FacultyID uuid.UUID      `json:"faculty_id"`
+	Name      string         `json:"name"`
+	Semester  sql.NullString `json:"semester"`
+	CreatedAt sql.NullTime   `json:"created_at"`
+	UpdatedAt sql.NullTime   `json:"updated_at"`
 }
 
 type CourseSection struct {
-	ID            uuid.UUID    `json:"id"`
-	CourseID      uuid.UUID    `json:"course_id"`
-	SectionNumber int32        `json:"section_number"`
-	TeacherID     uuid.UUID    `json:"teacher_id"`
-	MaxStudents   int32        `json:"max_students"`
-	CreatedAt     sql.NullTime `json:"created_at"`
-	UpdatedAt     sql.NullTime `json:"updated_at"`
+	ID          uuid.UUID    `json:"id"`
+	CourseID    uuid.UUID    `json:"course_id"`
+	TeacherID   uuid.UUID    `json:"teacher_id"`
+	MaxStudents int32        `json:"max_students"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
+	Name        string       `json:"name"`
 }
 
 type CourseStudent struct {
@@ -196,6 +179,18 @@ type RefreshToken struct {
 	Token     string       `json:"token"`
 	ExpiresAt time.Time    `json:"expires_at"`
 	CreatedAt sql.NullTime `json:"created_at"`
+}
+
+type Schedule struct {
+	ID          uuid.UUID    `json:"id"`
+	CourseID    uuid.UUID    `json:"course_id"`
+	SectionID   uuid.UUID    `json:"section_id"`
+	ClassroomID uuid.UUID    `json:"classroom_id"`
+	DayOfWeek   int32        `json:"day_of_week"`
+	StartTime   time.Time    `json:"start_time"`
+	EndTime     time.Time    `json:"end_time"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+	UpdatedAt   sql.NullTime `json:"updated_at"`
 }
 
 type University struct {
