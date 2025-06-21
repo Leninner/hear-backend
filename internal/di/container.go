@@ -46,8 +46,7 @@ func NewContainer(db *db.Queries) *Container {
 		AllowOrigins:     "*",
 		AllowMethods:     "*",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With",
-		AllowCredentials: true,
-		ExposeHeaders:    "Content-Length",
+		ExposeHeaders:    "*",
 	}))
 	
 	// SHARED MODULES
