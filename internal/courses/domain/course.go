@@ -28,6 +28,7 @@ func NewCourse(name string, facultyID uuid.UUID, semester string) *Course {
 }
 
 type Repository interface {
+	// Course methods
 	Create(course *Course) error
 	GetByID(id uuid.UUID) (*Course, error)
 	GetAll() ([]*Course, error)
@@ -35,4 +36,12 @@ type Repository interface {
 	GetBySemester(semester string) ([]*Course, error)
 	Update(course *Course) error
 	Delete(id uuid.UUID) error
+	
+	// Section methods
+	CreateSection(section *CourseSection) error
+	GetSectionByID(id uuid.UUID) (*CourseSection, error)
+	GetSectionsByCourseID(courseID uuid.UUID) ([]*CourseSection, error)
+	GetSectionsByTeacherID(teacherID uuid.UUID) ([]*CourseSection, error)
+	UpdateSection(section *CourseSection) error
+	DeleteSection(id uuid.UUID) error
 } 

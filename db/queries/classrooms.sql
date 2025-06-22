@@ -4,10 +4,11 @@ INSERT INTO classrooms (
     building,
     floor,
     capacity,
+    faculty_id,
     location_lat,
     location_lng
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetClassroomByID :one
@@ -17,6 +18,11 @@ WHERE id = $1 LIMIT 1;
 -- name: GetClassroomByName :one
 SELECT * FROM classrooms
 WHERE name = $1 LIMIT 1;
+
+-- name: GetClassroomsByFacultyID :many
+SELECT * FROM classrooms
+WHERE faculty_id = $1
+ORDER BY name;
 
 -- name: GetClassroomsByBuilding :many
 SELECT * FROM classrooms
@@ -46,8 +52,9 @@ SET
     building = COALESCE($3, building),
     floor = COALESCE($4, floor),
     capacity = COALESCE($5, capacity),
-    location_lat = COALESCE($6, location_lat),
-    location_lng = COALESCE($7, location_lng),
+    faculty_id = COALESCE($6, faculty_id),
+    location_lat = COALESCE($7, location_lat),
+    location_lng = COALESCE($8, location_lng),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

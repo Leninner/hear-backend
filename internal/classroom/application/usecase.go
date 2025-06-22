@@ -2,52 +2,70 @@ package application
 
 import (
 	"github.com/google/uuid"
-	"github.com/leninner/hear-backend/internal/classroom/domain"
+	classroomDomain "github.com/leninner/hear-backend/internal/classroom/domain"
+	facultiesDomain "github.com/leninner/hear-backend/internal/faculties/domain"
 )
 
 type UseCase struct {
-	repository domain.Repository
+	repository        classroomDomain.Repository
+	facultyRepository facultiesDomain.Repository
 }
 
-func NewUseCase(repository domain.Repository) *UseCase {
+func NewUseCase(repository classroomDomain.Repository, facultyRepository facultiesDomain.Repository) *UseCase {
 	return &UseCase{
-		repository: repository,
+		repository:        repository,
+		facultyRepository: facultyRepository,
 	}
 }
 
-func (uc *UseCase) CreateClassroom(dto *domain.CreateClassroomDTO) (*domain.Classroom, error) {
+func (uc *UseCase) CreateClassroom(dto *classroomDomain.CreateClassroomDTO) (*classroomDomain.Classroom, error) {
 	if err := dto.Validate(); err != nil {
 		return nil, err
 	}
 
-	existingClassroom, err := uc.repository.GetByName(dto.Name)
-	if err == nil && existingClassroom != nil {
-		return nil, domain.ErrClassroomNameExists
+	// Validate that faculty exists
+	_, err := uc.facultyRepository.GetByID(dto.FacultyID)
+	if err != nil {
+		return nil, classroomDomain.ErrFacultyNotFound
 	}
 
-	classroom := domain.NewClassroom(
+	existingClassroom, err := uc.repository.GetByName(dto.Name)
+	if err == nil && existingClassroom != nil {
+		return nil, classroomDomain.ErrClassroomNameExists
+	}
+
+	classroom := classroomDomain.NewClassroom(
 		dto.Name, 
 		dto.Building, 
 		*dto.Floor, 
-		*dto.Capacity, 
+		*dto.Capacity,
+		dto.FacultyID,
 		*dto.LocationLat, 
 		*dto.LocationLng,
 	)
 	if err := uc.repository.Create(classroom); err != nil {
-		return nil, domain.NewInternalError("failed to create classroom in database", err)
+		return nil, classroomDomain.NewInternalError("failed to create classroom in database", err)
 	}
 
 	return classroom, nil
 }
 
-func (uc *UseCase) UpdateClassroom(id uuid.UUID, dto *domain.UpdateClassroomDTO) error {
+func (uc *UseCase) UpdateClassroom(id uuid.UUID, dto *classroomDomain.UpdateClassroomDTO) error {
 	if err := dto.Validate(); err != nil {
 		return err
 	}
 
 	classroom, err := uc.repository.GetByID(id)
 	if err != nil {
-		return domain.ErrClassroomNotFound
+		return classroomDomain.ErrClassroomNotFound
+	}
+
+	// Validate that faculty exists if it's being updated
+	if dto.FacultyID != nil {
+		_, err := uc.facultyRepository.GetByID(*dto.FacultyID)
+		if err != nil {
+			return classroomDomain.ErrFacultyNotFound
+		}
 	}
 
 	if dto.Name != "" {
@@ -55,7 +73,7 @@ func (uc *UseCase) UpdateClassroom(id uuid.UUID, dto *domain.UpdateClassroomDTO)
 		if dto.Name != classroom.Name {
 			existingClassroom, err := uc.repository.GetByName(dto.Name)
 			if err == nil && existingClassroom != nil {
-				return domain.ErrClassroomNameExists
+				return classroomDomain.ErrClassroomNameExists
 			}
 		}
 		classroom.Name = dto.Name
@@ -73,6 +91,10 @@ func (uc *UseCase) UpdateClassroom(id uuid.UUID, dto *domain.UpdateClassroomDTO)
 		classroom.Capacity = *dto.Capacity
 	}
 
+	if dto.FacultyID != nil {
+		classroom.FacultyID = *dto.FacultyID
+	}
+
 	if dto.LocationLat != nil {
 		classroom.LocationLat = *dto.LocationLat
 	}
@@ -82,32 +104,40 @@ func (uc *UseCase) UpdateClassroom(id uuid.UUID, dto *domain.UpdateClassroomDTO)
 	}
 
 	if err := uc.repository.Update(classroom); err != nil {
-		return domain.NewInternalError("failed to update classroom in database", err)
+		return classroomDomain.NewInternalError("failed to update classroom in database", err)
 	}
 
 	return nil
 }
 
-func (uc *UseCase) GetClassroom(id uuid.UUID) (*domain.Classroom, error) {
+func (uc *UseCase) GetClassroom(id uuid.UUID) (*classroomDomain.Classroom, error) {
 	classroom, err := uc.repository.GetByID(id)
 	if err != nil {
-		return nil, domain.ErrClassroomNotFound
+		return nil, classroomDomain.ErrClassroomNotFound
 	}
 	return classroom, nil
 }
 
-func (uc *UseCase) GetAllClassrooms() ([]*domain.Classroom, error) {
+func (uc *UseCase) GetAllClassrooms() ([]*classroomDomain.Classroom, error) {
 	classrooms, err := uc.repository.GetAll()
 	if err != nil {
-		return nil, domain.NewInternalError("failed to retrieve classrooms from database", err)
+		return nil, classroomDomain.NewInternalError("failed to retrieve classrooms from database", err)
 	}
 	return classrooms, nil
 }
 
-func (uc *UseCase) GetClassroomsByLocation(lat, lng, radius float64) ([]*domain.Classroom, error) {
+func (uc *UseCase) GetClassroomsByFaculty(facultyID uuid.UUID) ([]*classroomDomain.Classroom, error) {
+	classrooms, err := uc.repository.GetByFacultyID(facultyID)
+	if err != nil {
+		return nil, classroomDomain.NewInternalError("failed to retrieve classrooms by faculty from database", err)
+	}
+	return classrooms, nil
+}
+
+func (uc *UseCase) GetClassroomsByLocation(lat, lng, radius float64) ([]*classroomDomain.Classroom, error) {
 	classrooms, err := uc.repository.GetByLocation(lat, lng, radius)
 	if err != nil {
-		return nil, domain.NewInternalError("failed to retrieve classrooms by location from database", err)
+		return nil, classroomDomain.NewInternalError("failed to retrieve classrooms by location from database", err)
 	}
 	return classrooms, nil
 }
@@ -116,11 +146,11 @@ func (uc *UseCase) DeleteClassroom(id uuid.UUID) error {
 	// Check if classroom exists before deleting
 	_, err := uc.repository.GetByID(id)
 	if err != nil {
-		return domain.ErrClassroomNotFound
+		return classroomDomain.ErrClassroomNotFound
 	}
 
 	if err := uc.repository.Delete(id); err != nil {
-		return domain.NewInternalError("failed to delete classroom from database", err)
+		return classroomDomain.NewInternalError("failed to delete classroom from database", err)
 	}
 
 	return nil

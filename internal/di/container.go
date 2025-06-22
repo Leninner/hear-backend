@@ -16,6 +16,8 @@ import (
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
 	qrcode "github.com/leninner/hear-backend/internal/qrcode"
 	qrcodeApp "github.com/leninner/hear-backend/internal/qrcode/application"
+	schedules "github.com/leninner/hear-backend/internal/schedules"
+	schedulesApp "github.com/leninner/hear-backend/internal/schedules/application"
 	docsApp "github.com/leninner/hear-backend/internal/shared/handler"
 	universities "github.com/leninner/hear-backend/internal/universities"
 	universitiesApp "github.com/leninner/hear-backend/internal/universities/application"
@@ -34,6 +36,7 @@ type Container struct {
 	CoursesHandler  *coursesApp.Handler
 	UniversitiesHandler *universitiesApp.Handler
 	FacultiesHandler *facultiesApp.Handler
+	SchedulesHandler *schedulesApp.Handler
 }
 
 func NewContainer(db *db.Queries) *Container {
@@ -66,6 +69,7 @@ func NewContainer(db *db.Queries) *Container {
 	coursesHandler := courses.Setup(api, db, authHandler)
 	universitiesHandler := universities.Setup(api, db, authHandler)
 	facultiesHandler := faculties.Setup(api, db, authHandler)
+	schedulesHandler := schedules.Setup(api, db, authHandler)
 
 	return &Container{
 		App:             app,
@@ -78,5 +82,6 @@ func NewContainer(db *db.Queries) *Container {
 		CoursesHandler:  coursesHandler,
 		UniversitiesHandler: universitiesHandler,
 		FacultiesHandler: facultiesHandler,
+		SchedulesHandler: schedulesHandler,
 	}
 } 

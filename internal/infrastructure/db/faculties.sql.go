@@ -14,35 +14,24 @@ import (
 const createFaculty = `-- name: CreateFaculty :one
 INSERT INTO faculties (
     university_id,
-    name,
-    location_lat,
-    location_lng
+    name
 ) VALUES (
-    $1, $2, $3, $4
-) RETURNING id, university_id, name, location_lat, location_lng, created_at, updated_at
+    $1, $2
+) RETURNING id, university_id, name, created_at, updated_at
 `
 
 type CreateFacultyParams struct {
 	UniversityID uuid.UUID `json:"university_id"`
 	Name         string    `json:"name"`
-	LocationLat  string    `json:"location_lat"`
-	LocationLng  string    `json:"location_lng"`
 }
 
 func (q *Queries) CreateFaculty(ctx context.Context, arg CreateFacultyParams) (Faculty, error) {
-	row := q.queryRow(ctx, q.createFacultyStmt, createFaculty,
-		arg.UniversityID,
-		arg.Name,
-		arg.LocationLat,
-		arg.LocationLng,
-	)
+	row := q.queryRow(ctx, q.createFacultyStmt, createFaculty, arg.UniversityID, arg.Name)
 	var i Faculty
 	err := row.Scan(
 		&i.ID,
 		&i.UniversityID,
 		&i.Name,
-		&i.LocationLat,
-		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -60,7 +49,7 @@ func (q *Queries) DeleteFaculty(ctx context.Context, id uuid.UUID) error {
 }
 
 const getFacultiesByUniversityID = `-- name: GetFacultiesByUniversityID :many
-SELECT id, university_id, name, location_lat, location_lng, created_at, updated_at FROM faculties
+SELECT id, university_id, name, created_at, updated_at FROM faculties
 WHERE university_id = $1
 ORDER BY name
 `
@@ -78,8 +67,6 @@ func (q *Queries) GetFacultiesByUniversityID(ctx context.Context, universityID u
 			&i.ID,
 			&i.UniversityID,
 			&i.Name,
-			&i.LocationLat,
-			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -97,7 +84,7 @@ func (q *Queries) GetFacultiesByUniversityID(ctx context.Context, universityID u
 }
 
 const getFacultyByID = `-- name: GetFacultyByID :one
-SELECT id, university_id, name, location_lat, location_lng, created_at, updated_at FROM faculties
+SELECT id, university_id, name, created_at, updated_at FROM faculties
 WHERE id = $1 LIMIT 1
 `
 
@@ -108,8 +95,6 @@ func (q *Queries) GetFacultyByID(ctx context.Context, id uuid.UUID) (Faculty, er
 		&i.ID,
 		&i.UniversityID,
 		&i.Name,
-		&i.LocationLat,
-		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -117,7 +102,7 @@ func (q *Queries) GetFacultyByID(ctx context.Context, id uuid.UUID) (Faculty, er
 }
 
 const getFacultyByName = `-- name: GetFacultyByName :one
-SELECT id, university_id, name, location_lat, location_lng, created_at, updated_at FROM faculties
+SELECT id, university_id, name, created_at, updated_at FROM faculties
 WHERE name = $1 LIMIT 1
 `
 
@@ -128,8 +113,6 @@ func (q *Queries) GetFacultyByName(ctx context.Context, name string) (Faculty, e
 		&i.ID,
 		&i.UniversityID,
 		&i.Name,
-		&i.LocationLat,
-		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -137,7 +120,7 @@ func (q *Queries) GetFacultyByName(ctx context.Context, name string) (Faculty, e
 }
 
 const listFaculties = `-- name: ListFaculties :many
-SELECT id, university_id, name, location_lat, location_lng, created_at, updated_at FROM faculties
+SELECT id, university_id, name, created_at, updated_at FROM faculties
 ORDER BY name
 `
 
@@ -154,8 +137,6 @@ func (q *Queries) ListFaculties(ctx context.Context) ([]Faculty, error) {
 			&i.ID,
 			&i.UniversityID,
 			&i.Name,
-			&i.LocationLat,
-			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -177,36 +158,24 @@ UPDATE faculties
 SET
     university_id = COALESCE($2, university_id),
     name = COALESCE($3, name),
-    location_lat = COALESCE($4, location_lat),
-    location_lng = COALESCE($5, location_lng),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, university_id, name, location_lat, location_lng, created_at, updated_at
+RETURNING id, university_id, name, created_at, updated_at
 `
 
 type UpdateFacultyParams struct {
 	ID           uuid.UUID `json:"id"`
 	UniversityID uuid.UUID `json:"university_id"`
 	Name         string    `json:"name"`
-	LocationLat  string    `json:"location_lat"`
-	LocationLng  string    `json:"location_lng"`
 }
 
 func (q *Queries) UpdateFaculty(ctx context.Context, arg UpdateFacultyParams) (Faculty, error) {
-	row := q.queryRow(ctx, q.updateFacultyStmt, updateFaculty,
-		arg.ID,
-		arg.UniversityID,
-		arg.Name,
-		arg.LocationLat,
-		arg.LocationLng,
-	)
+	row := q.queryRow(ctx, q.updateFacultyStmt, updateFaculty, arg.ID, arg.UniversityID, arg.Name)
 	var i Faculty
 	err := row.Scan(
 		&i.ID,
 		&i.UniversityID,
 		&i.Name,
-		&i.LocationLat,
-		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -2,8 +2,6 @@ package infrastructure
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/faculties/domain"
@@ -26,8 +24,6 @@ func (r *PostgresRepository) Create(faculty *domain.Faculty) error {
 	params := db.CreateFacultyParams{
 		UniversityID: faculty.UniversityID,
 		Name:         faculty.Name,
-		LocationLat:  fmt.Sprintf("%.8f", faculty.LocationLat),
-		LocationLng:  fmt.Sprintf("%.8f", faculty.LocationLng),
 	}
 
 	result, err := r.queries.CreateFaculty(ctx, params)
@@ -53,15 +49,10 @@ func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Faculty, error) {
 		return nil, domain.ErrFacultyNotFound
 	}
 
-	lat, _ := strconv.ParseFloat(result.LocationLat, 64)
-	lng, _ := strconv.ParseFloat(result.LocationLng, 64)
-
 	faculty := &domain.Faculty{
 		ID:           result.ID,
 		UniversityID: result.UniversityID,
 		Name:         result.Name,
-		LocationLat:  lat,
-		LocationLng:  lng,
 	}
 	if result.CreatedAt.Valid {
 		faculty.CreatedAt = result.CreatedAt.Time
@@ -81,15 +72,10 @@ func (r *PostgresRepository) GetByName(name string) (*domain.Faculty, error) {
 		return nil, domain.ErrFacultyNotFound
 	}
 
-	lat, _ := strconv.ParseFloat(result.LocationLat, 64)
-	lng, _ := strconv.ParseFloat(result.LocationLng, 64)
-
 	faculty := &domain.Faculty{
 		ID:           result.ID,
 		UniversityID: result.UniversityID,
 		Name:         result.Name,
-		LocationLat:  lat,
-		LocationLng:  lng,
 	}
 	if result.CreatedAt.Valid {
 		faculty.CreatedAt = result.CreatedAt.Time
@@ -111,15 +97,10 @@ func (r *PostgresRepository) GetAll() ([]*domain.Faculty, error) {
 
 	faculties := make([]*domain.Faculty, 0, len(results))
 	for _, result := range results {
-		lat, _ := strconv.ParseFloat(result.LocationLat, 64)
-		lng, _ := strconv.ParseFloat(result.LocationLng, 64)
-
 		faculty := &domain.Faculty{
 			ID:           result.ID,
 			UniversityID: result.UniversityID,
 			Name:         result.Name,
-			LocationLat:  lat,
-			LocationLng:  lng,
 		}
 		if result.CreatedAt.Valid {
 			faculty.CreatedAt = result.CreatedAt.Time
@@ -142,15 +123,10 @@ func (r *PostgresRepository) GetByUniversityID(universityID uuid.UUID) ([]*domai
 
 	faculties := make([]*domain.Faculty, 0, len(results))
 	for _, result := range results {
-		lat, _ := strconv.ParseFloat(result.LocationLat, 64)
-		lng, _ := strconv.ParseFloat(result.LocationLng, 64)
-
 		faculty := &domain.Faculty{
 			ID:           result.ID,
 			UniversityID: result.UniversityID,
 			Name:         result.Name,
-			LocationLat:  lat,
-			LocationLng:  lng,
 		}
 		if result.CreatedAt.Valid {
 			faculty.CreatedAt = result.CreatedAt.Time
@@ -170,8 +146,6 @@ func (r *PostgresRepository) Update(faculty *domain.Faculty) error {
 		ID:           faculty.ID,
 		UniversityID: faculty.UniversityID,
 		Name:         faculty.Name,
-		LocationLat:  fmt.Sprintf("%.8f", faculty.LocationLat),
-		LocationLng:  fmt.Sprintf("%.8f", faculty.LocationLng),
 	}
 
 	result, err := r.queries.UpdateFaculty(ctx, params)

@@ -35,6 +35,7 @@ type Querier interface {
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
 	GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, error)
+	GetAllCourses(ctx context.Context) ([]Course, error)
 	GetAttendanceByDate(ctx context.Context, date time.Time) ([]Attendance, error)
 	GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendance, error)
 	GetAttendanceByScheduleID(ctx context.Context, arg GetAttendanceByScheduleIDParams) ([]Attendance, error)
@@ -43,6 +44,7 @@ type Querier interface {
 	GetClassroomByName(ctx context.Context, name string) (Classroom, error)
 	GetClassroomsByBuilding(ctx context.Context, building string) ([]Classroom, error)
 	GetClassroomsByCapacity(ctx context.Context, capacity int32) ([]Classroom, error)
+	GetClassroomsByFacultyID(ctx context.Context, facultyID uuid.NullUUID) ([]Classroom, error)
 	GetCourseByID(ctx context.Context, id uuid.UUID) (Course, error)
 	GetCourseSectionByID(ctx context.Context, id uuid.UUID) (CourseSection, error)
 	GetCourseSectionsByCourseID(ctx context.Context, courseID uuid.UUID) ([]CourseSection, error)

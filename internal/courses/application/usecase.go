@@ -94,4 +94,78 @@ func (uc *UseCase) DeleteCourse(id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+// Section methods
+func (uc *UseCase) CreateSection(dto *domain.CreateCourseSectionDTO) (*domain.CourseSection, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
+	section := domain.NewCourseSection(dto.CourseID, dto.TeacherID, dto.Name, dto.MaxStudents)
+	if err := uc.repository.CreateSection(section); err != nil {
+		return nil, domain.NewInternalError("failed to create section in database", err)
+	}
+
+	return section, nil
+}
+
+func (uc *UseCase) GetSection(id uuid.UUID) (*domain.CourseSection, error) {
+	section, err := uc.repository.GetSectionByID(id)
+	if err != nil {
+		return nil, domain.NewNotFoundError("section not found")
+	}
+	return section, nil
+}
+
+func (uc *UseCase) GetSectionsByCourse(courseID uuid.UUID) ([]*domain.CourseSection, error) {
+	sections, err := uc.repository.GetSectionsByCourseID(courseID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve course sections from database", err)
+	}
+	return sections, nil
+}
+
+func (uc *UseCase) GetSectionsByTeacher(teacherID uuid.UUID) ([]*domain.CourseSection, error) {
+	sections, err := uc.repository.GetSectionsByTeacherID(teacherID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve teacher sections from database", err)
+	}
+	return sections, nil
+}
+
+func (uc *UseCase) UpdateSection(id uuid.UUID, dto *domain.UpdateCourseSectionDTO) error {
+	if err := dto.Validate(); err != nil {
+		return err
+	}
+
+	section, err := uc.repository.GetSectionByID(id)
+	if err != nil {
+		return domain.NewNotFoundError("section not found")
+	}
+
+	if dto.Name != "" {
+		section.Name = dto.Name
+	}
+	if dto.MaxStudents != nil {
+		section.MaxStudents = *dto.MaxStudents
+	}
+
+	if err := uc.repository.UpdateSection(section); err != nil {
+		return domain.NewInternalError("failed to update section in database", err)
+	}
+
+	return nil
+}
+
+func (uc *UseCase) DeleteSection(id uuid.UUID) error {
+	if _, err := uc.repository.GetSectionByID(id); err != nil {
+		return domain.NewNotFoundError("section not found")
+	}
+
+	if err := uc.repository.DeleteSection(id); err != nil {
+		return domain.NewInternalError("failed to delete section from database", err)
+	}
+
+	return nil
 } 

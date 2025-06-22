@@ -26,6 +26,23 @@ var RouteConfigs = []RouteConfig{
 	{Path: "/api/courses/:id", Method: "PUT", Roles: []string{"admin", "teacher"}, Description: "Update course"},
 	{Path: "/api/courses/:id", Method: "DELETE", Roles: []string{"admin", "teacher"}, Description: "Delete course"},
 
+	// Section management (admin and teachers)
+	{Path: "/api/courses/sections", Method: "POST", Roles: []string{"admin", "teacher"}, Description: "Create section"},
+	{Path: "/api/courses/sections/:id", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get section by ID"},
+	{Path: "/api/courses/:courseId/sections", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get sections by course"},
+	{Path: "/api/courses/teacher/:teacherId/sections", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get sections by teacher"},
+	{Path: "/api/courses/sections/:id", Method: "PUT", Roles: []string{"admin", "teacher"}, Description: "Update section"},
+	{Path: "/api/courses/sections/:id", Method: "DELETE", Roles: []string{"admin", "teacher"}, Description: "Delete section"},
+
+	// Schedule management (admin and teachers)
+	{Path: "/api/courses/:courseId/schedules", Method: "POST", Roles: []string{"admin", "teacher"}, Description: "Create schedule"},
+	{Path: "/api/courses/:courseId/schedules", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get schedules by course"},
+	{Path: "/api/sections/:sectionId/schedules", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get schedules by section"},
+	{Path: "/api/classrooms/:classroomId/schedules", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get schedules by classroom"},
+	{Path: "/api/schedules/:id", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get schedule by ID"},
+	{Path: "/api/schedules/:id", Method: "PUT", Roles: []string{"admin", "teacher"}, Description: "Update schedule"},
+	{Path: "/api/schedules/:id", Method: "DELETE", Roles: []string{"admin", "teacher"}, Description: "Delete schedule"},
+
 	// Classroom management (admin and teachers)
 	{Path: "/api/classrooms", Method: "POST", Roles: []string{"admin", "teacher"}, Description: "Create classroom"},
 	{Path: "/api/classrooms", Method: "GET", Roles: []string{"admin", "teacher"}, Description: "Get all classrooms"},

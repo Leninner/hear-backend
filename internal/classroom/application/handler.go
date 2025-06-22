@@ -152,4 +152,18 @@ func (h *Handler) DeleteClassroom(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, "Classroom deleted successfully", nil)
+}
+
+func (h *Handler) GetClassroomsByFaculty(c *fiber.Ctx) error {
+	facultyID, err := uuid.Parse(c.Params("facultyId"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid faculty ID format")
+	}
+
+	classrooms, err := h.useCase.GetClassroomsByFaculty(facultyID)
+	if err != nil {
+		return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve classrooms by faculty")
+	}
+
+	return response.Success(c, "Classrooms by faculty retrieved successfully", classrooms)
 } 

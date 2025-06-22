@@ -5,6 +5,7 @@ import (
 	"github.com/leninner/hear-backend/internal/auth/application"
 	classroomApp "github.com/leninner/hear-backend/internal/classroom/application"
 	classroomRepo "github.com/leninner/hear-backend/internal/classroom/infrastructure"
+	facultiesRepo "github.com/leninner/hear-backend/internal/faculties/infrastructure"
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
 	sharedMiddleware "github.com/leninner/hear-backend/internal/shared/middleware"
 )
@@ -16,7 +17,8 @@ func Setup(api fiber.Router, db *db.Queries, authHandler *application.Handler) *
 	classrooms := api.Group("/classrooms", authMiddleware.Authenticate(), authMiddleware.RequireTeacherOrAdmin())
 
 	classroomRepository := classroomRepo.NewPostgresRepository(db)
-	classroomUseCase := classroomApp.NewUseCase(classroomRepository)
+	facultyRepository := facultiesRepo.NewPostgresRepository(db)
+	classroomUseCase := classroomApp.NewUseCase(classroomRepository, facultyRepository)
 	classroomHandler := classroomApp.NewHandler(classroomUseCase)
 	classroomApp.SetupRoutes(classrooms, classroomHandler)
 

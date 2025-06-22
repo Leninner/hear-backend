@@ -1,11 +1,9 @@
 -- name: CreateFaculty :one
 INSERT INTO faculties (
     university_id,
-    name,
-    location_lat,
-    location_lng
+    name
 ) VALUES (
-    $1, $2, $3, $4
+    $1, $2
 ) RETURNING *;
 
 -- name: GetFacultyByID :one
@@ -30,8 +28,6 @@ UPDATE faculties
 SET
     university_id = COALESCE($2, university_id),
     name = COALESCE($3, name),
-    location_lat = COALESCE($4, location_lat),
-    location_lng = COALESCE($5, location_lng),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;

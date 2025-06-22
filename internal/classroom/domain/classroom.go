@@ -12,13 +12,14 @@ type Classroom struct {
 	Building    string    `json:"building"`
 	Floor       int       `json:"floor"`
 	Capacity    int       `json:"capacity"`
+	FacultyID   uuid.UUID `json:"facultyId"`
 	LocationLat float64   `json:"locationLat"`
 	LocationLng float64   `json:"locationLng"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-func NewClassroom(name, building string, floor, capacity int, locationLat, locationLng float64) *Classroom {
+func NewClassroom(name, building string, floor, capacity int, facultyID uuid.UUID, locationLat, locationLng float64) *Classroom {
 	now := time.Now()
 	return &Classroom{
 		ID:          uuid.New(),
@@ -26,6 +27,7 @@ func NewClassroom(name, building string, floor, capacity int, locationLat, locat
 		Building:    building,
 		Floor:       floor,
 		Capacity:    capacity,
+		FacultyID:   facultyID,
 		LocationLat: locationLat,
 		LocationLng: locationLng,
 		CreatedAt:   now,
@@ -42,6 +44,7 @@ type Repository interface {
 	GetByID(id uuid.UUID) (*Classroom, error)
 	GetByName(name string) (*Classroom, error)
 	GetAll() ([]*Classroom, error)
+	GetByFacultyID(facultyID uuid.UUID) ([]*Classroom, error)
 	GetByLocation(lat, lng float64, radius float64) ([]*Classroom, error)
 	Update(classroom *Classroom) error
 	Delete(id uuid.UUID) error

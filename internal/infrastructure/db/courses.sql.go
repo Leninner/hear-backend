@@ -52,6 +52,40 @@ func (q *Queries) DeleteCourse(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getAllCourses = `-- name: GetAllCourses :many
+SELECT id, faculty_id, name, semester, created_at, updated_at FROM courses
+`
+
+func (q *Queries) GetAllCourses(ctx context.Context) ([]Course, error) {
+	rows, err := q.query(ctx, q.getAllCoursesStmt, getAllCourses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Course{}
+	for rows.Next() {
+		var i Course
+		if err := rows.Scan(
+			&i.ID,
+			&i.FacultyID,
+			&i.Name,
+			&i.Semester,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCourseByID = `-- name: GetCourseByID :one
 SELECT id, faculty_id, name, semester, created_at, updated_at FROM courses
 WHERE id = $1 LIMIT 1

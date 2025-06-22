@@ -27,6 +27,7 @@ func (r *PostgresRepository) Create(classroom *domain.Classroom) error {
 		Building:    classroom.Building,
 		Floor:       int32(classroom.Floor),
 		Capacity:    int32(classroom.Capacity),
+		FacultyID:   uuid.NullUUID{UUID: classroom.FacultyID, Valid: true},
 		LocationLat: strconv.FormatFloat(classroom.LocationLat, 'f', -1, 64),
 		LocationLng: strconv.FormatFloat(classroom.LocationLng, 'f', -1, 64),
 	}
@@ -127,6 +128,22 @@ func (r *PostgresRepository) GetByLocation(lat, lng, radius float64) ([]*domain.
 	return classrooms, nil
 }
 
+func (r *PostgresRepository) GetByFacultyID(facultyID uuid.UUID) ([]*domain.Classroom, error) {
+	ctx := context.Background()
+	
+	dbClassrooms, err := r.db.GetClassroomsByFacultyID(ctx, uuid.NullUUID{UUID: facultyID, Valid: true})
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve classrooms by faculty from database", err)
+	}
+	
+	var classrooms []*domain.Classroom
+	for _, dbClassroom := range dbClassrooms {
+		classrooms = append(classrooms, r.mapToDomain(&dbClassroom))
+	}
+	
+	return classrooms, nil
+}
+
 func (r *PostgresRepository) Update(classroom *domain.Classroom) error {
 	ctx := context.Background()
 	
@@ -136,6 +153,7 @@ func (r *PostgresRepository) Update(classroom *domain.Classroom) error {
 		Building:    classroom.Building,
 		Floor:       int32(classroom.Floor),
 		Capacity:    int32(classroom.Capacity),
+		FacultyID:   uuid.NullUUID{UUID: classroom.FacultyID, Valid: true},
 		LocationLat: strconv.FormatFloat(classroom.LocationLat, 'f', -1, 64),
 		LocationLng: strconv.FormatFloat(classroom.LocationLng, 'f', -1, 64),
 	}
@@ -166,6 +184,7 @@ func (r *PostgresRepository) mapToDomain(dbClassroom *db.Classroom) *domain.Clas
 		Building:    dbClassroom.Building,
 		Floor:       int(dbClassroom.Floor),
 		Capacity:    int(dbClassroom.Capacity),
+		FacultyID:   dbClassroom.FacultyID.UUID,
 		LocationLat: r.parseFloat(dbClassroom.LocationLat),
 		LocationLng: r.parseFloat(dbClassroom.LocationLng),
 	}

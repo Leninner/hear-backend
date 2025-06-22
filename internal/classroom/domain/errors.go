@@ -88,6 +88,7 @@ func NewInternalError(message string, err error) error {
 var (
 	ErrNameRequired        = "name field is required and cannot be empty"
 	ErrBuildingRequired    = "building field is required and cannot be empty"
+	ErrFacultyIDRequired   = "faculty ID field is required and cannot be empty"
 	ErrFloorRequired       = "floor field is required"
 	ErrCapacityRequired    = "capacity field is required"
 	ErrLocationLatRequired = "locationLat field is required"
@@ -99,6 +100,7 @@ var (
 	ErrLocationLatInvalid  = "locationLat must be between -90 and 90"
 	ErrLocationLngInvalid  = "locationLng must be between -180 and 180"
 	ErrClassroomNotFound   = NewNotFoundError("classroom not found")
+	ErrFacultyNotFound     = NewNotFoundError("faculty not found")
 	ErrInvalidID           = NewValidationError("invalid classroom ID format")
 	ErrClassroomNameExists = NewConflictError("a classroom with this name already exists")
 ) 

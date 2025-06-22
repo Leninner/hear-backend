@@ -86,11 +86,13 @@ func NewInternalError(message string, err error) error {
 }
 
 var (
-	ErrUniversityIDRequired = "university ID field is required and cannot be empty"
-	ErrNameRequired         = "name field is required and cannot be empty"
-	ErrNameTooShort         = "name must be at least 2 characters long"
-	ErrNameTooLong          = "name cannot exceed 255 characters"
-	ErrFacultyExists        = NewConflictError("a faculty with this name already exists")
-	ErrFacultyNotFound      = NewNotFoundError("faculty not found")
-	ErrInvalidID            = NewValidationError("invalid faculty ID format")
+	ErrSectionIDRequired   = "section ID field is required and cannot be empty"
+	ErrClassroomIDRequired = "classroom ID field is required and cannot be empty"
+	ErrDayOfWeekInvalid    = "day of week must be a valid value (0-6)"
+	ErrStartTimeRequired   = "start time field is required and cannot be empty"
+	ErrEndTimeRequired     = "end time field is required and cannot be empty"
+	ErrStartTimeInvalid    = "start time must be in HH:MM format"
+	ErrEndTimeInvalid      = "end time must be in HH:MM format"
+	ErrScheduleNotFound    = NewNotFoundError("schedule not found")
+	ErrInvalidID           = NewValidationError("invalid schedule ID format")
 ) 

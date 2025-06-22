@@ -2,15 +2,18 @@ package domain
 
 import (
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 type CreateClassroomDTO struct {
-	Name        string   `json:"name"`
-	Building    string   `json:"building"`
-	Floor       *int     `json:"floor"`
-	Capacity    *int     `json:"capacity"`
-	LocationLat *float64 `json:"locationLat"`
-	LocationLng *float64 `json:"locationLng"`
+	Name        string    `json:"name"`
+	Building    string    `json:"building"`
+	Floor       *int      `json:"floor"`
+	Capacity    *int      `json:"capacity"`
+	FacultyID   uuid.UUID `json:"facultyId"`
+	LocationLat *float64  `json:"locationLat"`
+	LocationLng *float64  `json:"locationLng"`
 }
 
 func (dto *CreateClassroomDTO) Validate() error {
@@ -22,6 +25,10 @@ func (dto *CreateClassroomDTO) Validate() error {
 
 	if strings.TrimSpace(dto.Building) == "" {
 		validationErrors.AddError(ErrBuildingRequired)
+	}
+
+	if dto.FacultyID == uuid.Nil {
+		validationErrors.AddError(ErrFacultyIDRequired)
 	}
 
 	if dto.Floor == nil {
@@ -58,12 +65,13 @@ func (dto *CreateClassroomDTO) Validate() error {
 }
 
 type UpdateClassroomDTO struct {
-	Name        string   `json:"name,omitempty"`
-	Building    string   `json:"building,omitempty"`
-	Floor       *int     `json:"floor,omitempty"`
-	Capacity    *int     `json:"capacity,omitempty"`
-	LocationLat *float64 `json:"locationLat,omitempty"`
-	LocationLng *float64 `json:"locationLng,omitempty"`
+	Name        string     `json:"name,omitempty"`
+	Building    string     `json:"building,omitempty"`
+	Floor       *int       `json:"floor,omitempty"`
+	Capacity    *int       `json:"capacity,omitempty"`
+	FacultyID   *uuid.UUID `json:"facultyId,omitempty"`
+	LocationLat *float64   `json:"locationLat,omitempty"`
+	LocationLng *float64   `json:"locationLng,omitempty"`
 }
 
 func (dto *UpdateClassroomDTO) Validate() error {
@@ -75,6 +83,10 @@ func (dto *UpdateClassroomDTO) Validate() error {
 
 	if dto.Building != "" && strings.TrimSpace(dto.Building) == "" {
 		validationErrors.AddError(ErrBuildingRequired)
+	}
+
+	if dto.FacultyID != nil && *dto.FacultyID == uuid.Nil {
+		validationErrors.AddError(ErrFacultyIDRequired)
 	}
 
 	if dto.Floor != nil && *dto.Floor < 0 {

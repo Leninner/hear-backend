@@ -1,0 +1,1399 @@
+{
+	"info": {
+		"_postman_id": "hear-backend-api-collection",
+		"name": "Hear Backend API",
+		"description": "Complete API collection for the Hear Backend system. Includes all endpoints for authentication, user management, universities, faculties, courses, classrooms, QR codes, and attendance tracking.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Check if the API server is running"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Documentation",
+			"item": [
+				{
+					"name": "OpenAPI Spec",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/docs/openapi.yaml",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"docs",
+								"openapi.yaml"
+							]
+						},
+						"description": "Get the OpenAPI specification"
+					},
+					"response": []
+				},
+				{
+					"name": "Swagger Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/documentation/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"documentation",
+								""
+							]
+						},
+						"description": "Access the Swagger UI documentation"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate user and get access token"
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"student\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your-refresh-token-here\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh access token using refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your-refresh-token-here\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout user and invalidate refresh token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Management (Admin Only)",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"student\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users"
+							]
+						},
+						"description": "Create a new user (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Get user details by ID (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users"
+							]
+						},
+						"description": "Get all users (Admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Universities",
+			"item": [
+				{
+					"name": "Get All Universities (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/universities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"universities"
+							]
+						},
+						"description": "Get all universities (Authenticated users)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get University by ID (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/universities/{{university_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"universities",
+								"{{university_id}}"
+							]
+						},
+						"description": "Get university by ID (Authenticated users)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create University (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Example University\",\n  \"location\": \"Example City\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/universities",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"universities"
+							]
+						},
+						"description": "Create a new university (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update University (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated University Name\",\n  \"location\": \"Updated City\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/universities/{{university_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"universities",
+								"{{university_id}}"
+							]
+						},
+						"description": "Update university (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete University (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/universities/{{university_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"universities",
+								"{{university_id}}"
+							]
+						},
+						"description": "Delete university (Admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Faculties",
+			"item": [
+				{
+					"name": "Get All Faculties (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/faculties",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties"
+							]
+						},
+						"description": "Get all faculties (Authenticated users)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Faculties by University (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/faculties/university/{{university_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties",
+								"university",
+								"{{university_id}}"
+							]
+						},
+						"description": "Get faculties by university ID (Authenticated users)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Faculty by ID (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/faculties/{{faculty_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties",
+								"{{faculty_id}}"
+							]
+						},
+						"description": "Get faculty by ID (Authenticated users)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Faculty (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Example Faculty\",\n  \"universityId\": \"{{university_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/faculties",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"faculties"
+							]
+						},
+						"description": "Create a new faculty (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Faculty (Admin)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Faculty Name\",\n  \"universityId\": \"{{university_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/admin/faculties/{{faculty_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"faculties",
+								"{{faculty_id}}"
+							]
+						},
+						"description": "Update faculty (Admin only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Faculty (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/faculties/{{faculty_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"faculties",
+								"{{faculty_id}}"
+							]
+						},
+						"description": "Delete faculty (Admin only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses (Admin/Teacher)",
+			"item": [
+				{
+					"name": "Create Course",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Example Course\",\n  \"code\": \"CS101\",\n  \"description\": \"Introduction to Computer Science\",\n  \"facultyId\": \"{{faculty_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							]
+						},
+						"description": "Create a new course (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Courses",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							]
+						},
+						"description": "Get all courses (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/{{course_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"{{course_id}}"
+							]
+						},
+						"description": "Get course by ID (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Course Name\",\n  \"code\": \"CS102\",\n  \"description\": \"Updated course description\",\n  \"facultyId\": \"{{faculty_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/{{course_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"{{course_id}}"
+							]
+						},
+						"description": "Update course (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/{{course_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"{{course_id}}"
+							]
+						},
+						"description": "Delete course (Admin/Teacher only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Classrooms (Admin/Teacher)",
+			"item": [
+				{
+					"name": "Create Classroom",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Room 101\",\n  \"capacity\": 30,\n  \"location\": \"Building A\",\n  \"facultyId\": \"{{faculty_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/classrooms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms"
+							]
+						},
+						"description": "Create a new classroom (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Classrooms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms"
+							]
+						},
+						"description": "Get all classrooms (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Classrooms by Faculty",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/faculty/{{faculty_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"faculty",
+								"{{faculty_id}}"
+							]
+						},
+						"description": "Get classrooms by faculty ID (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Classrooms by Location",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/location?location=Building%20A",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"location"
+							],
+							"query": [
+								{
+									"key": "location",
+									"value": "Building A"
+								}
+							]
+						},
+						"description": "Get classrooms by location (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Classroom by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/{{classroom_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"{{classroom_id}}"
+							]
+						},
+						"description": "Get classroom by ID (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Classroom",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Room Name\",\n  \"capacity\": 40,\n  \"location\": \"Building B\",\n  \"facultyId\": \"{{faculty_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/{{classroom_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"{{classroom_id}}"
+							]
+						},
+						"description": "Update classroom (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Classroom",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/{{classroom_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"{{classroom_id}}"
+							]
+						},
+						"description": "Delete classroom (Admin/Teacher only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "QR Codes (Teacher Only)",
+			"item": [
+				{
+					"name": "Create QR Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\",\n  \"code\": \"QR123456\",\n  \"expiresAt\": \"2024-12-31T23:59:59Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes"
+							]
+						},
+						"description": "Create a new QR code (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get QR Code by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/{{qr_code_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"{{qr_code_id}}"
+							]
+						},
+						"description": "Get QR code by ID (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get QR Code by Code",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/code/QR123456",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"code",
+								"QR123456"
+							]
+						},
+						"description": "Get QR code by code string (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course QR Codes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/course/{{course_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"course",
+								"{{course_id}}"
+							]
+						},
+						"description": "Get all QR codes for a course (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active QR Code",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/course/{{course_id}}/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"course",
+								"{{course_id}}",
+								"active"
+							]
+						},
+						"description": "Get active QR code for a course (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update QR Code",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\",\n  \"code\": \"QR789012\",\n  \"expiresAt\": \"2024-12-31T23:59:59Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/{{qr_code_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"{{qr_code_id}}"
+							]
+						},
+						"description": "Update QR code (Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete QR Code",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/qrcodes/{{qr_code_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"qrcodes",
+								"{{qr_code_id}}"
+							]
+						},
+						"description": "Delete QR code (Teacher only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Attendance (Teacher/Student)",
+			"item": [
+				{
+					"name": "Create Attendance",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{student_id}}\",\n  \"classScheduleId\": \"{{class_schedule_id}}\",\n  \"qrCodeId\": \"{{qr_code_id}}\",\n  \"status\": \"present\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance"
+							]
+						},
+						"description": "Create attendance record (Teacher/Student only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Attendance by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/{{attendance_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"{{attendance_id}}"
+							]
+						},
+						"description": "Get attendance by ID (Teacher/Student only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Attendance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/student/{{student_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"student",
+								"{{student_id}}"
+							]
+						},
+						"description": "Get attendance records for a student (Teacher/Student only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Class Schedule Attendance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/class-schedule/{{class_schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"class-schedule",
+								"{{class_schedule_id}}"
+							]
+						},
+						"description": "Get attendance records for a class schedule (Teacher/Student only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Attendance",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{student_id}}\",\n  \"classScheduleId\": \"{{class_schedule_id}}\",\n  \"qrCodeId\": \"{{qr_code_id}}\",\n  \"status\": \"absent\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/attendance/{{attendance_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"{{attendance_id}}"
+							]
+						},
+						"description": "Update attendance record (Teacher/Student only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Attendance",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/attendance/{{attendance_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"attendance",
+								"{{attendance_id}}"
+							]
+						},
+						"description": "Delete attendance record (Teacher/Student only)"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "your-access-token-here",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "user-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "university_id",
+			"value": "university-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "faculty_id",
+			"value": "faculty-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "course_id",
+			"value": "course-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "classroom_id",
+			"value": "classroom-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "qr_code_id",
+			"value": "qr-code-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "attendance_id",
+			"value": "attendance-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "student_id",
+			"value": "student-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "class_schedule_id",
+			"value": "class-schedule-uuid-here",
+			"type": "string"
+		}
+	]
+}

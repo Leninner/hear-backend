@@ -91,6 +91,7 @@ var (
 	ErrTeacherIDRequired   = "teacher ID field is required and cannot be empty"
 	ErrFacultyIDRequired   = "faculty ID field is required and cannot be empty"
 	ErrSemesterRequired    = "semester field is required and cannot be empty"
+	ErrSemesterInvalid     = "semester must be a valid number between 1 and 10"
 	ErrCourseIDRequired    = "course ID field is required and cannot be empty"
 	ErrSectionIDRequired   = "section ID field is required and cannot be empty"
 	ErrClassroomIDRequired = "classroom ID field is required and cannot be empty"

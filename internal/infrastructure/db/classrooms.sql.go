@@ -18,20 +18,22 @@ INSERT INTO classrooms (
     building,
     floor,
     capacity,
+    faculty_id,
     location_lat,
     location_lng
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
-) RETURNING id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id
 `
 
 type CreateClassroomParams struct {
-	Name        string `json:"name"`
-	Building    string `json:"building"`
-	Floor       int32  `json:"floor"`
-	Capacity    int32  `json:"capacity"`
-	LocationLat string `json:"location_lat"`
-	LocationLng string `json:"location_lng"`
+	Name        string        `json:"name"`
+	Building    string        `json:"building"`
+	Floor       int32         `json:"floor"`
+	Capacity    int32         `json:"capacity"`
+	FacultyID   uuid.NullUUID `json:"faculty_id"`
+	LocationLat string        `json:"location_lat"`
+	LocationLng string        `json:"location_lng"`
 }
 
 func (q *Queries) CreateClassroom(ctx context.Context, arg CreateClassroomParams) (Classroom, error) {
@@ -40,6 +42,7 @@ func (q *Queries) CreateClassroom(ctx context.Context, arg CreateClassroomParams
 		arg.Building,
 		arg.Floor,
 		arg.Capacity,
+		arg.FacultyID,
 		arg.LocationLat,
 		arg.LocationLng,
 	)
@@ -54,6 +57,7 @@ func (q *Queries) CreateClassroom(ctx context.Context, arg CreateClassroomParams
 		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FacultyID,
 	)
 	return i, err
 }
@@ -69,7 +73,7 @@ func (q *Queries) DeleteClassroom(ctx context.Context, id uuid.UUID) error {
 }
 
 const getAll = `-- name: GetAll :many
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
 ORDER BY created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -98,6 +102,7 @@ func (q *Queries) GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, er
 			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FacultyID,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +118,7 @@ func (q *Queries) GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, er
 }
 
 const getClassroomByID = `-- name: GetClassroomByID :one
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
 WHERE id = $1 LIMIT 1
 `
 
@@ -130,12 +135,13 @@ func (q *Queries) GetClassroomByID(ctx context.Context, id uuid.UUID) (Classroom
 		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FacultyID,
 	)
 	return i, err
 }
 
 const getClassroomByName = `-- name: GetClassroomByName :one
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
 WHERE name = $1 LIMIT 1
 `
 
@@ -152,12 +158,13 @@ func (q *Queries) GetClassroomByName(ctx context.Context, name string) (Classroo
 		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FacultyID,
 	)
 	return i, err
 }
 
 const getClassroomsByBuilding = `-- name: GetClassroomsByBuilding :many
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
 WHERE building = $1
 `
 
@@ -180,6 +187,7 @@ func (q *Queries) GetClassroomsByBuilding(ctx context.Context, building string) 
 			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FacultyID,
 		); err != nil {
 			return nil, err
 		}
@@ -195,7 +203,7 @@ func (q *Queries) GetClassroomsByBuilding(ctx context.Context, building string) 
 }
 
 const getClassroomsByCapacity = `-- name: GetClassroomsByCapacity :many
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at FROM classrooms
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
 WHERE capacity >= $1
 `
 
@@ -218,6 +226,47 @@ func (q *Queries) GetClassroomsByCapacity(ctx context.Context, capacity int32) (
 			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FacultyID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getClassroomsByFacultyID = `-- name: GetClassroomsByFacultyID :many
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id FROM classrooms
+WHERE faculty_id = $1
+ORDER BY name
+`
+
+func (q *Queries) GetClassroomsByFacultyID(ctx context.Context, facultyID uuid.NullUUID) ([]Classroom, error) {
+	rows, err := q.query(ctx, q.getClassroomsByFacultyIDStmt, getClassroomsByFacultyID, facultyID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Classroom{}
+	for rows.Next() {
+		var i Classroom
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Building,
+			&i.Floor,
+			&i.Capacity,
+			&i.LocationLat,
+			&i.LocationLng,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.FacultyID,
 		); err != nil {
 			return nil, err
 		}
@@ -233,7 +282,7 @@ func (q *Queries) GetClassroomsByCapacity(ctx context.Context, capacity int32) (
 }
 
 const getNearbyClassrooms = `-- name: GetNearbyClassrooms :many
-SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at,
+SELECT id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id,
     earth_distance(ll_to_earth(location_lat, location_lng), ll_to_earth($1, $2)) as distance
 FROM classrooms
 WHERE earth_box(ll_to_earth($1, $2), $3) @> ll_to_earth(location_lat, location_lng)
@@ -248,16 +297,17 @@ type GetNearbyClassroomsParams struct {
 }
 
 type GetNearbyClassroomsRow struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Building    string       `json:"building"`
-	Floor       int32        `json:"floor"`
-	Capacity    int32        `json:"capacity"`
-	LocationLat string       `json:"location_lat"`
-	LocationLng string       `json:"location_lng"`
-	CreatedAt   sql.NullTime `json:"created_at"`
-	UpdatedAt   sql.NullTime `json:"updated_at"`
-	Distance    float64      `json:"distance"`
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	Building    string        `json:"building"`
+	Floor       int32         `json:"floor"`
+	Capacity    int32         `json:"capacity"`
+	LocationLat string        `json:"location_lat"`
+	LocationLng string        `json:"location_lng"`
+	CreatedAt   sql.NullTime  `json:"created_at"`
+	UpdatedAt   sql.NullTime  `json:"updated_at"`
+	FacultyID   uuid.NullUUID `json:"faculty_id"`
+	Distance    float64       `json:"distance"`
 }
 
 func (q *Queries) GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroomsParams) ([]GetNearbyClassroomsRow, error) {
@@ -279,6 +329,7 @@ func (q *Queries) GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroo
 			&i.LocationLng,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.FacultyID,
 			&i.Distance,
 		); err != nil {
 			return nil, err
@@ -301,21 +352,23 @@ SET
     building = COALESCE($3, building),
     floor = COALESCE($4, floor),
     capacity = COALESCE($5, capacity),
-    location_lat = COALESCE($6, location_lat),
-    location_lng = COALESCE($7, location_lng),
+    faculty_id = COALESCE($6, faculty_id),
+    location_lat = COALESCE($7, location_lat),
+    location_lng = COALESCE($8, location_lng),
     updated_at = CURRENT_TIMESTAMP
 WHERE id = $1
-RETURNING id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at
+RETURNING id, name, building, floor, capacity, location_lat, location_lng, created_at, updated_at, faculty_id
 `
 
 type UpdateClassroomParams struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Building    string    `json:"building"`
-	Floor       int32     `json:"floor"`
-	Capacity    int32     `json:"capacity"`
-	LocationLat string    `json:"location_lat"`
-	LocationLng string    `json:"location_lng"`
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	Building    string        `json:"building"`
+	Floor       int32         `json:"floor"`
+	Capacity    int32         `json:"capacity"`
+	FacultyID   uuid.NullUUID `json:"faculty_id"`
+	LocationLat string        `json:"location_lat"`
+	LocationLng string        `json:"location_lng"`
 }
 
 func (q *Queries) UpdateClassroom(ctx context.Context, arg UpdateClassroomParams) (Classroom, error) {
@@ -325,6 +378,7 @@ func (q *Queries) UpdateClassroom(ctx context.Context, arg UpdateClassroomParams
 		arg.Building,
 		arg.Floor,
 		arg.Capacity,
+		arg.FacultyID,
 		arg.LocationLat,
 		arg.LocationLng,
 	)
@@ -339,6 +393,7 @@ func (q *Queries) UpdateClassroom(ctx context.Context, arg UpdateClassroomParams
 		&i.LocationLng,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.FacultyID,
 	)
 	return i, err
 }

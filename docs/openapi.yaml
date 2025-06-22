@@ -157,6 +157,69 @@ components:
         code:
           type: string
 
+    CourseSection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        courseId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        teacherId:
+          type: string
+          format: uuid
+        maxStudents:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - courseId
+        - name
+        - teacherId
+        - maxStudents
+
+    CourseSectionCreate:
+      type: object
+      properties:
+        courseId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+        teacherId:
+          type: string
+          format: uuid
+        maxStudents:
+          type: integer
+          minimum: 1
+      required:
+        - courseId
+        - name
+        - teacherId
+        - maxStudents
+
+    CourseSectionUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        maxStudents:
+          type: integer
+          minimum: 1
+
     ClassSchedule:
       type: object
       properties:
@@ -344,6 +407,7 @@ components:
           oneOf:
             - $ref: '#/components/schemas/User'
             - $ref: '#/components/schemas/Course'
+            - $ref: '#/components/schemas/CourseSection'
             - $ref: '#/components/schemas/ClassSchedule'
             - $ref: '#/components/schemas/Attendance'
             - $ref: '#/components/schemas/QRCode'
@@ -352,6 +416,7 @@ components:
                 oneOf:
                   - $ref: '#/components/schemas/User'
                   - $ref: '#/components/schemas/Course'
+                  - $ref: '#/components/schemas/CourseSection'
                   - $ref: '#/components/schemas/ClassSchedule'
                   - $ref: '#/components/schemas/Attendance'
                   - $ref: '#/components/schemas/QRCode'
@@ -928,6 +993,253 @@ paths:
                 $ref: '#/components/schemas/Response'
         '404':
           description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/sections:
+    post:
+      summary: Create a new course section
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSectionCreate'
+      responses:
+        '201':
+          description: Course section created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/sections/{id}:
+    get:
+      summary: Get course section by ID
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course section found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course section not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    put:
+      summary: Update course section
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseSectionUpdate'
+      responses:
+        '200':
+          description: Course section updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '400':
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course section not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+    delete:
+      summary: Delete course section
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course section deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course section not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/{courseId}/sections:
+    get:
+      summary: Get all sections for a course
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of course sections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  /courses/teacher/{teacherId}/sections:
+    get:
+      summary: Get all sections for a teacher
+      tags:
+        - Course Sections
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: teacherId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of teacher sections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '404':
+          description: Teacher not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+        '403':
+          description: Forbidden - Insufficient permissions
           content:
             application/json:
               schema:

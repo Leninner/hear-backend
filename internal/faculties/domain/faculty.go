@@ -10,20 +10,16 @@ type Faculty struct {
 	ID           uuid.UUID `json:"id"`
 	UniversityID uuid.UUID `json:"universityId"`
 	Name         string    `json:"name"`
-	LocationLat  float64   `json:"locationLat"`
-	LocationLng  float64   `json:"locationLng"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
-func NewFaculty(universityID uuid.UUID, name string, locationLat, locationLng float64) *Faculty {
+func NewFaculty(universityID uuid.UUID, name string) *Faculty {
 	now := time.Now()
 	return &Faculty{
 		ID:           uuid.New(),
 		UniversityID: universityID,
 		Name:         name,
-		LocationLat:  locationLat,
-		LocationLng:  locationLng,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}

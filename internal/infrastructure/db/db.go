@@ -90,6 +90,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getAllStmt, err = db.PrepareContext(ctx, getAll); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAll: %w", err)
 	}
+	if q.getAllCoursesStmt, err = db.PrepareContext(ctx, getAllCourses); err != nil {
+		return nil, fmt.Errorf("error preparing query GetAllCourses: %w", err)
+	}
 	if q.getAttendanceByDateStmt, err = db.PrepareContext(ctx, getAttendanceByDate); err != nil {
 		return nil, fmt.Errorf("error preparing query GetAttendanceByDate: %w", err)
 	}
@@ -113,6 +116,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.getClassroomsByCapacityStmt, err = db.PrepareContext(ctx, getClassroomsByCapacity); err != nil {
 		return nil, fmt.Errorf("error preparing query GetClassroomsByCapacity: %w", err)
+	}
+	if q.getClassroomsByFacultyIDStmt, err = db.PrepareContext(ctx, getClassroomsByFacultyID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetClassroomsByFacultyID: %w", err)
 	}
 	if q.getCourseByIDStmt, err = db.PrepareContext(ctx, getCourseByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCourseByID: %w", err)
@@ -328,6 +334,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getAllStmt: %w", cerr)
 		}
 	}
+	if q.getAllCoursesStmt != nil {
+		if cerr := q.getAllCoursesStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getAllCoursesStmt: %w", cerr)
+		}
+	}
 	if q.getAttendanceByDateStmt != nil {
 		if cerr := q.getAttendanceByDateStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getAttendanceByDateStmt: %w", cerr)
@@ -366,6 +377,11 @@ func (q *Queries) Close() error {
 	if q.getClassroomsByCapacityStmt != nil {
 		if cerr := q.getClassroomsByCapacityStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getClassroomsByCapacityStmt: %w", cerr)
+		}
+	}
+	if q.getClassroomsByFacultyIDStmt != nil {
+		if cerr := q.getClassroomsByFacultyIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getClassroomsByFacultyIDStmt: %w", cerr)
 		}
 	}
 	if q.getCourseByIDStmt != nil {
@@ -594,6 +610,7 @@ type Queries struct {
 	deleteUserStmt                     *sql.Stmt
 	deleteUserRefreshTokensStmt        *sql.Stmt
 	getAllStmt                         *sql.Stmt
+	getAllCoursesStmt                  *sql.Stmt
 	getAttendanceByDateStmt            *sql.Stmt
 	getAttendanceByIDStmt              *sql.Stmt
 	getAttendanceByScheduleIDStmt      *sql.Stmt
@@ -602,6 +619,7 @@ type Queries struct {
 	getClassroomByNameStmt             *sql.Stmt
 	getClassroomsByBuildingStmt        *sql.Stmt
 	getClassroomsByCapacityStmt        *sql.Stmt
+	getClassroomsByFacultyIDStmt       *sql.Stmt
 	getCourseByIDStmt                  *sql.Stmt
 	getCourseSectionByIDStmt           *sql.Stmt
 	getCourseSectionsByCourseIDStmt    *sql.Stmt
@@ -663,6 +681,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteUserStmt:                     q.deleteUserStmt,
 		deleteUserRefreshTokensStmt:        q.deleteUserRefreshTokensStmt,
 		getAllStmt:                         q.getAllStmt,
+		getAllCoursesStmt:                  q.getAllCoursesStmt,
 		getAttendanceByDateStmt:            q.getAttendanceByDateStmt,
 		getAttendanceByIDStmt:              q.getAttendanceByIDStmt,
 		getAttendanceByScheduleIDStmt:      q.getAttendanceByScheduleIDStmt,
@@ -671,6 +690,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getClassroomByNameStmt:             q.getClassroomByNameStmt,
 		getClassroomsByBuildingStmt:        q.getClassroomsByBuildingStmt,
 		getClassroomsByCapacityStmt:        q.getClassroomsByCapacityStmt,
+		getClassroomsByFacultyIDStmt:       q.getClassroomsByFacultyIDStmt,
 		getCourseByIDStmt:                  q.getCourseByIDStmt,
 		getCourseSectionByIDStmt:           q.getCourseSectionByIDStmt,
 		getCourseSectionsByCourseIDStmt:    q.getCourseSectionsByCourseIDStmt,

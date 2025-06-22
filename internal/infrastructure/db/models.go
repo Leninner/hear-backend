@@ -114,15 +114,16 @@ type Attendance struct {
 }
 
 type Classroom struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Building    string       `json:"building"`
-	Floor       int32        `json:"floor"`
-	Capacity    int32        `json:"capacity"`
-	LocationLat string       `json:"location_lat"`
-	LocationLng string       `json:"location_lng"`
-	CreatedAt   sql.NullTime `json:"created_at"`
-	UpdatedAt   sql.NullTime `json:"updated_at"`
+	ID          uuid.UUID     `json:"id"`
+	Name        string        `json:"name"`
+	Building    string        `json:"building"`
+	Floor       int32         `json:"floor"`
+	Capacity    int32         `json:"capacity"`
+	LocationLat string        `json:"location_lat"`
+	LocationLng string        `json:"location_lng"`
+	CreatedAt   sql.NullTime  `json:"created_at"`
+	UpdatedAt   sql.NullTime  `json:"updated_at"`
+	FacultyID   uuid.NullUUID `json:"faculty_id"`
 }
 
 type Course struct {
@@ -159,8 +160,6 @@ type Faculty struct {
 	ID           uuid.UUID    `json:"id"`
 	UniversityID uuid.UUID    `json:"university_id"`
 	Name         string       `json:"name"`
-	LocationLat  string       `json:"location_lat"`
-	LocationLng  string       `json:"location_lng"`
 	CreatedAt    sql.NullTime `json:"created_at"`
 	UpdatedAt    sql.NullTime `json:"updated_at"`
 }

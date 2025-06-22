@@ -132,4 +132,158 @@ func (h *Handler) DeleteCourse(c *fiber.Ctx) error {
 	}
 
 	return response.Success(c, "Course deleted successfully", nil)
+}
+
+// Section handlers
+func (h *Handler) CreateSection(c *fiber.Ctx) error {
+	section := new(domain.CreateCourseSectionDTO)
+	if err := c.BodyParser(section); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid request body format")
+	}
+
+	createdSection, err := h.useCase.CreateSection(section)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.ValidationErrors:
+			return response.Error(c, fiber.StatusBadRequest, e.GetErrors())
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeConflict:
+				return response.Error(c, fiber.StatusConflict, e.Message)
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to create section")
+		}
+	}
+
+	return response.Success(c, "Section created successfully", createdSection)
+}
+
+func (h *Handler) GetSection(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid section ID format")
+	}
+
+	section, err := h.useCase.GetSection(id)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve section")
+		}
+	}
+
+	return response.Success(c, "Section retrieved successfully", section)
+}
+
+func (h *Handler) GetSectionsByCourse(c *fiber.Ctx) error {
+	courseID, err := uuid.Parse(c.Params("courseId"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid course ID format")
+	}
+
+	sections, err := h.useCase.GetSectionsByCourse(courseID)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve course sections")
+		}
+	}
+
+	return response.Success(c, "Course sections retrieved successfully", sections)
+}
+
+func (h *Handler) GetSectionsByTeacher(c *fiber.Ctx) error {
+	teacherID, err := uuid.Parse(c.Params("teacherId"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid teacher ID format")
+	}
+
+	sections, err := h.useCase.GetSectionsByTeacher(teacherID)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve teacher sections")
+		}
+	}
+
+	return response.Success(c, "Teacher sections retrieved successfully", sections)
+}
+
+func (h *Handler) UpdateSection(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid section ID format")
+	}
+
+	section := new(domain.UpdateCourseSectionDTO)
+	if err := c.BodyParser(section); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid request body format")
+	}
+
+	if err := h.useCase.UpdateSection(id, section); err != nil {
+		switch e := err.(type) {
+		case *domain.ValidationErrors:
+			return response.Error(c, fiber.StatusBadRequest, e.GetErrors())
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to update section")
+		}
+	}
+
+	return response.Success(c, "Section updated successfully", nil)
+}
+
+func (h *Handler) DeleteSection(c *fiber.Ctx) error {
+	id, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid section ID format")
+	}
+
+	if err := h.useCase.DeleteSection(id); err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to delete section")
+		}
+	}
+
+	return response.Success(c, "Section deleted successfully", nil)
 } 

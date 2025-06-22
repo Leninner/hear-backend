@@ -15,6 +15,9 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM courses
 WHERE faculty_id = $1;
 
+-- name: GetAllCourses :many
+SELECT * FROM courses;
+
 -- name: GetCoursesBySemester :many
 SELECT * FROM courses
 WHERE semester = $1;

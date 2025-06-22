@@ -77,7 +77,7 @@ func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.Course, error) {
 func (r *PostgresRepository) GetAll() ([]*domain.Course, error) {
 	ctx := context.Background()
 
-	courses, err := r.queries.GetCoursesByFacultyID(ctx, uuid.Nil)
+	courses, err := r.queries.GetAllCourses(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -188,4 +188,141 @@ func (r *PostgresRepository) Delete(id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+// Section methods
+func (r *PostgresRepository) CreateSection(section *domain.CourseSection) error {
+	ctx := context.Background()
+
+	params := db.CreateCourseSectionParams{
+		CourseID:    section.CourseID,
+		Name:        section.Name,
+		TeacherID:   section.TeacherID,
+		MaxStudents: int32(section.MaxStudents),
+	}
+
+	createdSection, err := r.queries.CreateCourseSection(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	section.ID = createdSection.ID
+	if createdSection.CreatedAt.Valid {
+		section.CreatedAt = createdSection.CreatedAt.Time
+	}
+	if createdSection.UpdatedAt.Valid {
+		section.UpdatedAt = createdSection.UpdatedAt.Time
+	}
+
+	return nil
+}
+
+func (r *PostgresRepository) GetSectionByID(id uuid.UUID) (*domain.CourseSection, error) {
+	ctx := context.Background()
+
+	section, err := r.queries.GetCourseSectionByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	domainSection := &domain.CourseSection{
+		ID:          section.ID,
+		CourseID:    section.CourseID,
+		Name:        section.Name,
+		TeacherID:   section.TeacherID,
+		MaxStudents: int(section.MaxStudents),
+	}
+	if section.CreatedAt.Valid {
+		domainSection.CreatedAt = section.CreatedAt.Time
+	}
+	if section.UpdatedAt.Valid {
+		domainSection.UpdatedAt = section.UpdatedAt.Time
+	}
+
+	return domainSection, nil
+}
+
+func (r *PostgresRepository) GetSectionsByCourseID(courseID uuid.UUID) ([]*domain.CourseSection, error) {
+	ctx := context.Background()
+
+	sections, err := r.queries.GetCourseSectionsByCourseID(ctx, courseID)
+	if err != nil {
+		return nil, err
+	}
+
+	var domainSections []*domain.CourseSection
+	for _, section := range sections {
+		domainSection := &domain.CourseSection{
+			ID:          section.ID,
+			CourseID:    section.CourseID,
+			Name:        section.Name,
+			TeacherID:   section.TeacherID,
+			MaxStudents: int(section.MaxStudents),
+		}
+		if section.CreatedAt.Valid {
+			domainSection.CreatedAt = section.CreatedAt.Time
+		}
+		if section.UpdatedAt.Valid {
+			domainSection.UpdatedAt = section.UpdatedAt.Time
+		}
+		domainSections = append(domainSections, domainSection)
+	}
+
+	return domainSections, nil
+}
+
+func (r *PostgresRepository) GetSectionsByTeacherID(teacherID uuid.UUID) ([]*domain.CourseSection, error) {
+	ctx := context.Background()
+
+	sections, err := r.queries.GetCourseSectionsByTeacherID(ctx, teacherID)
+	if err != nil {
+		return nil, err
+	}
+
+	var domainSections []*domain.CourseSection
+	for _, section := range sections {
+		domainSection := &domain.CourseSection{
+			ID:          section.ID,
+			CourseID:    section.CourseID,
+			Name:        section.Name,
+			TeacherID:   section.TeacherID,
+			MaxStudents: int(section.MaxStudents),
+		}
+		if section.CreatedAt.Valid {
+			domainSection.CreatedAt = section.CreatedAt.Time
+		}
+		if section.UpdatedAt.Valid {
+			domainSection.UpdatedAt = section.UpdatedAt.Time
+		}
+		domainSections = append(domainSections, domainSection)
+	}
+
+	return domainSections, nil
+}
+
+func (r *PostgresRepository) UpdateSection(section *domain.CourseSection) error {
+	ctx := context.Background()
+
+	params := db.UpdateCourseSectionParams{
+		ID:          section.ID,
+		Name:        section.Name,
+		TeacherID:   section.TeacherID,
+		MaxStudents: int32(section.MaxStudents),
+	}
+
+	updatedSection, err := r.queries.UpdateCourseSection(ctx, params)
+	if err != nil {
+		return err
+	}
+
+	if updatedSection.UpdatedAt.Valid {
+		section.UpdatedAt = updatedSection.UpdatedAt.Time
+	}
+	return nil
+}
+
+func (r *PostgresRepository) DeleteSection(id uuid.UUID) error {
+	ctx := context.Background()
+
+	return r.queries.DeleteCourseSection(ctx, id)
 } 

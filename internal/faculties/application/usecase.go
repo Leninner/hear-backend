@@ -20,7 +20,7 @@ func (uc *UseCase) CreateFaculty(dto *domain.CreateFacultyDTO) (*domain.Faculty,
 		return nil, err
 	}
 
-	faculty := domain.NewFaculty(dto.UniversityID, dto.Name, dto.LocationLat, dto.LocationLng)
+	faculty := domain.NewFaculty(dto.UniversityID, dto.Name)
 	if err := uc.repository.Create(faculty); err != nil {
 		return nil, domain.NewInternalError("failed to create faculty in database", err)
 	}
@@ -67,12 +67,6 @@ func (uc *UseCase) UpdateFaculty(id uuid.UUID, dto *domain.UpdateFacultyDTO) err
 	}
 	if dto.Name != "" {
 		faculty.Name = dto.Name
-	}
-	if dto.LocationLat != nil {
-		faculty.LocationLat = *dto.LocationLat
-	}
-	if dto.LocationLng != nil {
-		faculty.LocationLng = *dto.LocationLng
 	}
 
 	if err := uc.repository.Update(faculty); err != nil {
