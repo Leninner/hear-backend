@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -15,7 +16,8 @@ func Setup(api fiber.Router, db *db.Queries) *application.Handler {
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "default-secret-key-change-in-production"
+		fmt.Println("JWT_SECRET is not set. Defult in use")
+		jwtSecret = "default-secret-key"
 	}
 
 	userRepository := userRepo.NewPostgresRepository(db)

@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/leninner/hear-backend/internal/di"
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
-	server "github.com/leninner/hear-backend/internal/shared/server"
 	_ "github.com/lib/pq"
 )
 
@@ -17,7 +17,11 @@ func main() {
 	defer sqlDB.Close()
 
 	container := di.NewContainer(sqlDB)
-	server.SetupServer(container)
+	container.App.Get("/health", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status": "ok",
+		})
+	})
 
 	log.Fatal(container.App.Listen(":8080"))
 }

@@ -30,6 +30,7 @@ func (h *Handler) Login(c *fiber.Ctx) error {
 	}
 
 	authResponse, err := h.useCase.Login(loginDTO)
+
 	if err != nil {
 		switch e := err.(type) {
 		case *userDomain.ValidationErrors:

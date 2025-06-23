@@ -3,6 +3,8 @@ package di
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	attendance "github.com/leninner/hear-backend/internal/attendance"
 	attendanceApp "github.com/leninner/hear-backend/internal/attendance/application"
 	auth "github.com/leninner/hear-backend/internal/auth"
@@ -51,6 +53,8 @@ func NewContainer(db *db.Queries) *Container {
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With",
 		ExposeHeaders:    "*",
 	}))
+	app.Use(recover.New())
+	app.Use(logger.New())
 	
 	// SHARED MODULES
 	docsHandler := docsApp.NewDocsHandler()

@@ -22,7 +22,7 @@ func NewUseCase(userRepository userDomain.Repository, tokenRepository domain.Tok
 		userRepository:  userRepository,
 		tokenRepository: tokenRepository,
 		jwtSecret:       []byte(jwtSecret),
-		accessTokenTTL:  15 * time.Minute,
+		accessTokenTTL:  24 * time.Hour,
 		refreshTokenTTL: 7 * 24 * time.Hour,
 	}
 }
