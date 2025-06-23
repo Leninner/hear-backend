@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "hear-backend-api-collection",
 		"name": "Hear Backend API",
-		"description": "Complete API collection for the Hear Backend system. Includes all endpoints for authentication, user management, universities, faculties, courses, classrooms, QR codes, and attendance tracking.",
+		"description": "Complete API collection for the Hear Backend system. Includes all endpoints for authentication, user management, universities, faculties, courses, course sections, schedules, classrooms, QR codes, and attendance tracking.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -747,6 +747,381 @@
 			]
 		},
 		{
+			"name": "Course Sections (Admin/Teacher)",
+			"item": [
+				{
+					"name": "Create Section",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\",\n  \"name\": \"Section A\",\n  \"teacherId\": \"{{teacher_id}}\",\n  \"maxStudents\": 30\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections"
+							]
+						},
+						"description": "Create a new course section (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Section by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections/{{section_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections",
+								"{{section_id}}"
+							]
+						},
+						"description": "Get section by ID (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sections by Course",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/{{course_id}}/sections",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"{{course_id}}",
+								"sections"
+							]
+						},
+						"description": "Get all sections for a course (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Sections by Teacher",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/teacher/{{teacher_id}}/sections",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"teacher",
+								"{{teacher_id}}",
+								"sections"
+							]
+						},
+						"description": "Get all sections for a teacher (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Section",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Section Name\",\n  \"maxStudents\": 35\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections/{{section_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections",
+								"{{section_id}}"
+							]
+						},
+						"description": "Update section (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Section",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections/{{section_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections",
+								"{{section_id}}"
+							]
+						},
+						"description": "Delete section (Admin/Teacher only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Schedules (Admin/Teacher)",
+			"item": [
+				{
+					"name": "Create Schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sectionId\": \"{{section_id}}\",\n  \"classroomId\": \"{{classroom_id}}\",\n  \"dayOfWeek\": \"1\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"10:30\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schedules"
+							]
+						},
+						"description": "Create a new schedule (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedule by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schedules",
+								"{{schedule_id}}"
+							]
+						},
+						"description": "Get schedule by ID (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Course",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/{{course_id}}/schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"{{course_id}}",
+								"schedules"
+							]
+						},
+						"description": "Get all schedules for a course (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Section",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/sections/{{section_id}}/schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sections",
+								"{{section_id}}",
+								"schedules"
+							]
+						},
+						"description": "Get all schedules for a section (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Schedules by Classroom",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/classrooms/{{classroom_id}}/schedules",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"classrooms",
+								"{{classroom_id}}",
+								"schedules"
+							]
+						},
+						"description": "Get all schedules for a classroom (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Schedule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"sectionId\": \"{{section_id}}\",\n  \"classroomId\": \"{{classroom_id}}\",\n  \"dayOfWeek\": 2,\n  \"startTime\": \"10:00\",\n  \"endTime\": \"11:30\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schedules",
+								"{{schedule_id}}"
+							]
+						},
+						"description": "Update schedule (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Schedule",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/schedules/{{schedule_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"schedules",
+								"{{schedule_id}}"
+							]
+						},
+						"description": "Delete schedule (Admin/Teacher only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Classrooms (Admin/Teacher)",
 			"item": [
 				{
@@ -1393,6 +1768,21 @@
 		{
 			"key": "class_schedule_id",
 			"value": "class-schedule-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "section_id",
+			"value": "section-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "teacher_id",
+			"value": "teacher-uuid-here",
+			"type": "string"
+		},
+		{
+			"key": "schedule_id",
+			"value": "schedule-uuid-here",
 			"type": "string"
 		}
 	]

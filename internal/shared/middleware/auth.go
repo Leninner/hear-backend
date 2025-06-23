@@ -51,6 +51,10 @@ func (m *AuthMiddleware) Authenticate() fiber.Handler {
 func (m *AuthMiddleware) RequireRole(allowedRoles ...string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		user := c.Locals("user").(*domain.TokenClaims)
+
+		if user.Role == "admin" {
+			return c.Next()
+		}
 		
 		for _, role := range allowedRoles {
 			if user.Role == role {
