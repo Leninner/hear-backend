@@ -325,4 +325,55 @@ func (r *PostgresRepository) DeleteSection(id uuid.UUID) error {
 	ctx := context.Background()
 
 	return r.queries.DeleteCourseSection(ctx, id)
+}
+
+// Enrollment methods
+func (r *PostgresRepository) EnrollStudent(sectionID, studentID uuid.UUID) error {
+	ctx := context.Background()
+
+	params := db.EnrollStudentParams{
+		SectionID: sectionID,
+		StudentID: studentID,
+	}
+
+	_, err := r.queries.EnrollStudent(ctx, params)
+	return err
+}
+
+func (r *PostgresRepository) GetEnrollmentCount(sectionID uuid.UUID) (int, error) {
+	ctx := context.Background()
+
+	count, err := r.queries.GetEnrollmentCount(ctx, sectionID)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), nil
+}
+
+func (r *PostgresRepository) IsStudentEnrolled(sectionID, studentID uuid.UUID) (bool, error) {
+	ctx := context.Background()
+
+	params := db.IsStudentEnrolledParams{
+		SectionID: sectionID,
+		StudentID: studentID,
+	}
+
+	enrolled, err := r.queries.IsStudentEnrolled(ctx, params)
+	if err != nil {
+		return false, err
+	}
+
+	return enrolled, nil
+}
+
+func (r *PostgresRepository) UnenrollStudent(sectionID, studentID uuid.UUID) error {
+	ctx := context.Background()
+
+	params := db.UnenrollStudentParams{
+		SectionID: sectionID,
+		StudentID: studentID,
+	}
+
+	return r.queries.UnenrollStudent(ctx, params)
 } 

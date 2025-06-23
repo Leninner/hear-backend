@@ -59,6 +59,33 @@ func (q *Queries) DeleteCourseSection(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const enrollStudent = `-- name: EnrollStudent :one
+INSERT INTO section_enrollments (
+    section_id,
+    student_id
+) VALUES (
+    $1, $2
+) RETURNING id, section_id, student_id, created_at, updated_at
+`
+
+type EnrollStudentParams struct {
+	SectionID uuid.UUID `json:"section_id"`
+	StudentID uuid.UUID `json:"student_id"`
+}
+
+func (q *Queries) EnrollStudent(ctx context.Context, arg EnrollStudentParams) (SectionEnrollment, error) {
+	row := q.queryRow(ctx, q.enrollStudentStmt, enrollStudent, arg.SectionID, arg.StudentID)
+	var i SectionEnrollment
+	err := row.Scan(
+		&i.ID,
+		&i.SectionID,
+		&i.StudentID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getCourseSectionByID = `-- name: GetCourseSectionByID :one
 SELECT id, course_id, teacher_id, max_students, created_at, updated_at, name FROM course_sections
 WHERE id = $1 LIMIT 1
@@ -149,6 +176,52 @@ func (q *Queries) GetCourseSectionsByTeacherID(ctx context.Context, teacherID uu
 		return nil, err
 	}
 	return items, nil
+}
+
+const getEnrollmentCount = `-- name: GetEnrollmentCount :one
+SELECT COUNT(*) FROM section_enrollments
+WHERE section_id = $1
+`
+
+func (q *Queries) GetEnrollmentCount(ctx context.Context, sectionID uuid.UUID) (int64, error) {
+	row := q.queryRow(ctx, q.getEnrollmentCountStmt, getEnrollmentCount, sectionID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const isStudentEnrolled = `-- name: IsStudentEnrolled :one
+SELECT EXISTS(
+    SELECT 1 FROM section_enrollments
+    WHERE section_id = $1 AND student_id = $2
+)
+`
+
+type IsStudentEnrolledParams struct {
+	SectionID uuid.UUID `json:"section_id"`
+	StudentID uuid.UUID `json:"student_id"`
+}
+
+func (q *Queries) IsStudentEnrolled(ctx context.Context, arg IsStudentEnrolledParams) (bool, error) {
+	row := q.queryRow(ctx, q.isStudentEnrolledStmt, isStudentEnrolled, arg.SectionID, arg.StudentID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const unenrollStudent = `-- name: UnenrollStudent :exec
+DELETE FROM section_enrollments
+WHERE section_id = $1 AND student_id = $2
+`
+
+type UnenrollStudentParams struct {
+	SectionID uuid.UUID `json:"section_id"`
+	StudentID uuid.UUID `json:"student_id"`
+}
+
+func (q *Queries) UnenrollStudent(ctx context.Context, arg UnenrollStudentParams) error {
+	_, err := q.exec(ctx, q.unenrollStudentStmt, unenrollStudent, arg.SectionID, arg.StudentID)
+	return err
 }
 
 const updateCourseSection = `-- name: UpdateCourseSection :one

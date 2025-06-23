@@ -145,17 +145,6 @@ type CourseSection struct {
 	Name        string       `json:"name"`
 }
 
-type CourseStudent struct {
-	CourseID       uuid.UUID    `json:"course_id"`
-	StudentID      uuid.UUID    `json:"student_id"`
-	EnrollmentDate sql.NullTime `json:"enrollment_date"`
-}
-
-type CourseTeacher struct {
-	CourseID  uuid.UUID `json:"course_id"`
-	TeacherID uuid.UUID `json:"teacher_id"`
-}
-
 type Faculty struct {
 	ID           uuid.UUID    `json:"id"`
 	UniversityID uuid.UUID    `json:"university_id"`
@@ -190,6 +179,14 @@ type Schedule struct {
 	EndTime     time.Time    `json:"end_time"`
 	CreatedAt   sql.NullTime `json:"created_at"`
 	UpdatedAt   sql.NullTime `json:"updated_at"`
+}
+
+type SectionEnrollment struct {
+	ID        uuid.UUID    `json:"id"`
+	SectionID uuid.UUID    `json:"section_id"`
+	StudentID uuid.UUID    `json:"student_id"`
+	CreatedAt sql.NullTime `json:"created_at"`
+	UpdatedAt sql.NullTime `json:"updated_at"`
 }
 
 type University struct {

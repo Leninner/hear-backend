@@ -104,4 +104,7 @@ var (
 	ErrEndTimeInvalid      = "end time must be in HH:MM format"
 	ErrCourseNotFound      = NewNotFoundError("course not found")
 	ErrInvalidID          = NewValidationError("invalid course ID format")
+	ErrStudentIDRequired  = "student ID field is required and cannot be empty"
+	ErrSectionFull        = "section has reached maximum capacity"
+	ErrAlreadyEnrolled    = "student is already enrolled in this section"
 ) 

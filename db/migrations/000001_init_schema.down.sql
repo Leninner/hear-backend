@@ -1,7 +1,6 @@
 DROP TABLE IF EXISTS qr_codes;
 DROP TABLE IF EXISTS attendance;
-DROP TABLE IF EXISTS course_teachers;
-DROP TABLE IF EXISTS course_students;
+DROP TABLE IF EXISTS section_enrollments;
 DROP TABLE IF EXISTS class_schedules;
 DROP TABLE IF EXISTS course_sections;
 DROP TABLE IF EXISTS courses;

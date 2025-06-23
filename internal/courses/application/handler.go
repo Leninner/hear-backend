@@ -287,3 +287,36 @@ func (h *Handler) DeleteSection(c *fiber.Ctx) error {
 
 	return response.Success(c, "Section deleted successfully", nil)
 } 
+
+func (h *Handler) EnrollInSection(c *fiber.Ctx) error {
+	sectionID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid section ID format")
+	}
+
+	enrollment := new(domain.EnrollInSectionDTO)
+	if err := c.BodyParser(enrollment); err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid request body format")
+	}
+	
+	section, err := h.useCase.EnrollInSection(sectionID, enrollment)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.ValidationErrors:
+			return response.Error(c, fiber.StatusBadRequest, e.GetErrors())
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			case domain.ErrorTypeConflict:
+				return response.Error(c, fiber.StatusConflict, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to enroll in section")
+		}
+	}
+
+	return response.Success(c, "Enrollment successful", section)
+}

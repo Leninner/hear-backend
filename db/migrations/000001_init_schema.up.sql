@@ -82,17 +82,12 @@ CREATE TABLE class_schedules (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE course_students (
-    course_id UUID NOT NULL REFERENCES courses(id),
+CREATE TABLE section_enrollments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    section_id UUID NOT NULL REFERENCES course_sections(id),
     student_id UUID NOT NULL REFERENCES users(id),
-    enrollment_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (course_id, student_id)
-);
-
-CREATE TABLE course_teachers (
-    course_id UUID NOT NULL REFERENCES courses(id),
-    teacher_id UUID NOT NULL REFERENCES users(id),
-    PRIMARY KEY (course_id, teacher_id)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE attendance (

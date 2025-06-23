@@ -93,3 +93,21 @@ func (dto *UpdateCourseDTO) Validate() error {
 
 	return nil
 } 
+
+type EnrollInSectionDTO struct {
+	StudentID uuid.UUID `json:"studentId"`
+}
+
+func (dto *EnrollInSectionDTO) Validate() error {
+	validationErrors := NewValidationErrors()
+
+	if dto.StudentID == uuid.Nil {
+		validationErrors.AddError(ErrStudentIDRequired)
+	}
+
+	if validationErrors.HasErrors() {
+		return validationErrors
+	}
+	
+	return nil
+}

@@ -1,6 +1,5 @@
 {
 	"info": {
-		"_postman_id": "hear-backend-api-collection",
 		"name": "Hear Backend API",
 		"description": "Complete API collection for the Hear Backend system. Includes all endpoints for authentication, user management, universities, faculties, courses, course sections, schedules, classrooms, QR codes, and attendance tracking.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -77,6 +76,26 @@
 			"item": [
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extrae el cuerpo de la respuesta",
+									"let response = pm.response.json();",
+									"",
+									"// Verifica que el token exista y lo guarda en la variable de colección",
+									"if (response.data && response.data.token && response.data.token.accessToken) {",
+									"    pm.collectionVariables.set(\"token\", response.data.token.accessToken);",
+									"    pm.collectionVariables.set(\"refreshToken\", response.data.token.refreshToken);",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -87,7 +106,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+							"raw": "{\n  \"email\": \"1@admin.com\",\n  \"password\": \"12@Lenin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
@@ -199,6 +218,16 @@
 				{
 					"name": "Create User",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -232,6 +261,16 @@
 				{
 					"name": "Get User by ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -240,7 +279,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/admin/users/{{user_id}}",
+							"raw": "{{base_url}}/api/admin/users/:userId",
 							"host": [
 								"{{base_url}}"
 							],
@@ -248,7 +287,13 @@
 								"api",
 								"admin",
 								"users",
-								"{{user_id}}"
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "770e8400-e29b-41d4-a716-446655440031"
+								}
 							]
 						},
 						"description": "Get user details by ID (Admin only)"
@@ -258,6 +303,16 @@
 				{
 					"name": "Get All Users",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -288,6 +343,16 @@
 				{
 					"name": "Get All Universities (Public)",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -312,6 +377,16 @@
 				{
 					"name": "Get University by ID (Public)",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -320,14 +395,20 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/universities/{{university_id}}",
+							"raw": "{{base_url}}/api/universities/:universityId",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"universities",
-								"{{university_id}}"
+								":universityId"
+							],
+							"variable": [
+								{
+									"key": "universityId",
+									"value": "550e8400-e29b-41d4-a716-446655440003"
+								}
 							]
 						},
 						"description": "Get university by ID (Authenticated users)"
@@ -435,6 +516,16 @@
 				{
 					"name": "Get All Faculties (Public)",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -459,6 +550,16 @@
 				{
 					"name": "Get Faculties by University (Public)",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -467,7 +568,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/faculties/university/{{university_id}}",
+							"raw": "{{base_url}}/api/faculties/university/:universityId",
 							"host": [
 								"{{base_url}}"
 							],
@@ -475,7 +576,13 @@
 								"api",
 								"faculties",
 								"university",
-								"{{university_id}}"
+								":universityId"
+							],
+							"variable": [
+								{
+									"key": "universityId",
+									"value": "550e8400-e29b-41d4-a716-446655440005"
+								}
 							]
 						},
 						"description": "Get faculties by university ID (Authenticated users)"
@@ -485,6 +592,16 @@
 				{
 					"name": "Get Faculty by ID (Public)",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -493,14 +610,20 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/faculties/{{faculty_id}}",
+							"raw": "{{base_url}}/api/faculties/:facultyId",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"faculties",
-								"{{faculty_id}}"
+								":facultyId"
+							],
+							"variable": [
+								{
+									"key": "facultyId",
+									"value": "660e8400-e29b-41d4-a716-446655440018"
+								}
 							]
 						},
 						"description": "Get faculty by ID (Authenticated users)"
@@ -640,6 +763,16 @@
 				{
 					"name": "Get All Courses",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -664,6 +797,16 @@
 				{
 					"name": "Get Course by ID",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -672,14 +815,20 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/courses/{{course_id}}",
+							"raw": "{{base_url}}/api/courses/:courseId",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"courses",
-								"{{course_id}}"
+								":courseId"
+							],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "a63dc7de-96c9-4c87-98a5-77742af9d9fa"
+								}
 							]
 						},
 						"description": "Get course by ID (Admin/Teacher only)"
@@ -811,6 +960,16 @@
 				{
 					"name": "Get Sections by Course",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -819,15 +978,21 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/courses/{{course_id}}/sections",
+							"raw": "{{base_url}}/api/courses/:courseId/sections",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"courses",
-								"{{course_id}}",
+								":courseId",
 								"sections"
+							],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "a63dc7de-96c9-4c87-98a5-77742af9d9fa"
+								}
 							]
 						},
 						"description": "Get all sections for a course (Admin/Teacher only)"
@@ -837,6 +1002,16 @@
 				{
 					"name": "Get Sections by Teacher",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -845,7 +1020,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/courses/teacher/{{teacher_id}}/sections",
+							"raw": "{{base_url}}/api/courses/teacher/:teacherId/sections",
 							"host": [
 								"{{base_url}}"
 							],
@@ -853,8 +1028,14 @@
 								"api",
 								"courses",
 								"teacher",
-								"{{teacher_id}}",
+								":teacherId",
 								"sections"
+							],
+							"variable": [
+								{
+									"key": "teacherId",
+									"value": "aff17df8-aeea-401a-8080-4f5e32b6f267"
+								}
 							]
 						},
 						"description": "Get all sections for a teacher (Admin/Teacher only)"
@@ -918,6 +1099,41 @@
 							]
 						},
 						"description": "Delete section (Admin/Teacher only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll in Section",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"studentId\": \"{{student_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections/{{section_id}}/enroll",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections",
+								"{{section_id}}",
+								"enroll"
+							]
+						},
+						"description": "Enroll a student in a course section (Admin/Teacher/Student)"
 					},
 					"response": []
 				}
@@ -986,6 +1202,16 @@
 				{
 					"name": "Get Schedules by Course",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [
 							{
@@ -994,15 +1220,21 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/courses/{{course_id}}/schedules",
+							"raw": "{{base_url}}/api/courses/:courseId/schedules",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"courses",
-								"{{course_id}}",
+								":courseId",
 								"schedules"
+							],
+							"variable": [
+								{
+									"key": "courseId",
+									"value": "990e8400-e29b-41d4-a716-446655440011"
+								}
 							]
 						},
 						"description": "Get all schedules for a course (Admin/Teacher only)"
@@ -1217,7 +1449,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/classrooms/location?location=Building%20A",
+							"raw": "{{base_url}}/api/classrooms/location?location=Building A",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1328,6 +1560,16 @@
 				{
 					"name": "Create QR Code",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1341,7 +1583,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"courseId\": \"{{course_id}}\",\n  \"code\": \"QR123456\",\n  \"expiresAt\": \"2024-12-31T23:59:59Z\"\n}"
+							"raw": "{\n  \"courseId\": \"a63dc7de-96c9-4c87-98a5-77742af9d9fa\",\n  \"code\": \"QR123456\",\n  \"expiresAt\": \"2024-12-31T23:59:59Z\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/qrcodes",
@@ -1784,6 +2026,14 @@
 			"key": "schedule_id",
 			"value": "schedule-uuid-here",
 			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "refreshToken",
+			"value": ""
 		}
 	]
 }

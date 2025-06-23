@@ -168,4 +168,41 @@ func (uc *UseCase) DeleteSection(id uuid.UUID) error {
 	}
 
 	return nil
-} 
+}
+
+func (uc *UseCase) EnrollInSection(sectionID uuid.UUID, dto *domain.EnrollInSectionDTO) (*domain.CourseSection, error) {
+	if err := dto.Validate(); err != nil {
+		return nil, err
+	}
+
+	// Get the section to check max students
+	section, err := uc.repository.GetSectionByID(sectionID)
+	if err != nil {
+		return nil, domain.NewNotFoundError("section not found")
+	}
+
+	// Check if student is already enrolled
+	alreadyEnrolled, err := uc.repository.IsStudentEnrolled(sectionID, dto.StudentID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to check enrollment status", err)
+	}
+	if alreadyEnrolled {
+		return nil, domain.NewConflictError(domain.ErrAlreadyEnrolled)
+	}
+
+	// Check if section is full
+	currentEnrollmentCount, err := uc.repository.GetEnrollmentCount(sectionID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to get enrollment count", err)
+	}
+	if currentEnrollmentCount >= section.MaxStudents {
+		return nil, domain.NewConflictError(domain.ErrSectionFull)
+	}
+
+	// Enroll the student
+	if err := uc.repository.EnrollStudent(sectionID, dto.StudentID); err != nil {
+		return nil, domain.NewInternalError("failed to enroll student", err)
+	}
+
+	return section, nil
+}

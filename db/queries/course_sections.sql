@@ -32,4 +32,26 @@ RETURNING *;
 
 -- name: DeleteCourseSection :exec
 DELETE FROM course_sections
-WHERE id = $1; 
+WHERE id = $1;
+
+-- name: EnrollStudent :one
+INSERT INTO section_enrollments (
+    section_id,
+    student_id
+) VALUES (
+    $1, $2
+) RETURNING *;
+
+-- name: GetEnrollmentCount :one
+SELECT COUNT(*) FROM section_enrollments
+WHERE section_id = $1;
+
+-- name: IsStudentEnrolled :one
+SELECT EXISTS(
+    SELECT 1 FROM section_enrollments
+    WHERE section_id = $1 AND student_id = $2
+);
+
+-- name: UnenrollStudent :exec
+DELETE FROM section_enrollments
+WHERE section_id = $1 AND student_id = $2; 

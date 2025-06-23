@@ -87,6 +87,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.deleteUserRefreshTokensStmt, err = db.PrepareContext(ctx, deleteUserRefreshTokens); err != nil {
 		return nil, fmt.Errorf("error preparing query DeleteUserRefreshTokens: %w", err)
 	}
+	if q.enrollStudentStmt, err = db.PrepareContext(ctx, enrollStudent); err != nil {
+		return nil, fmt.Errorf("error preparing query EnrollStudent: %w", err)
+	}
 	if q.getActiveQRCodeByCourseSectionIDStmt, err = db.PrepareContext(ctx, getActiveQRCodeByCourseSectionID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetActiveQRCodeByCourseSectionID: %w", err)
 	}
@@ -141,6 +144,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getCoursesBySemesterStmt, err = db.PrepareContext(ctx, getCoursesBySemester); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCoursesBySemester: %w", err)
 	}
+	if q.getEnrollmentCountStmt, err = db.PrepareContext(ctx, getEnrollmentCount); err != nil {
+		return nil, fmt.Errorf("error preparing query GetEnrollmentCount: %w", err)
+	}
 	if q.getFacultiesByUniversityIDStmt, err = db.PrepareContext(ctx, getFacultiesByUniversityID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetFacultiesByUniversityID: %w", err)
 	}
@@ -192,6 +198,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getUserByIDStmt, err = db.PrepareContext(ctx, getUserByID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUserByID: %w", err)
 	}
+	if q.isStudentEnrolledStmt, err = db.PrepareContext(ctx, isStudentEnrolled); err != nil {
+		return nil, fmt.Errorf("error preparing query IsStudentEnrolled: %w", err)
+	}
 	if q.listFacultiesStmt, err = db.PrepareContext(ctx, listFaculties); err != nil {
 		return nil, fmt.Errorf("error preparing query ListFaculties: %w", err)
 	}
@@ -200,6 +209,9 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	}
 	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
 		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	}
+	if q.unenrollStudentStmt, err = db.PrepareContext(ctx, unenrollStudent); err != nil {
+		return nil, fmt.Errorf("error preparing query UnenrollStudent: %w", err)
 	}
 	if q.updateAttendanceStmt, err = db.PrepareContext(ctx, updateAttendance); err != nil {
 		return nil, fmt.Errorf("error preparing query UpdateAttendance: %w", err)
@@ -338,6 +350,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing deleteUserRefreshTokensStmt: %w", cerr)
 		}
 	}
+	if q.enrollStudentStmt != nil {
+		if cerr := q.enrollStudentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing enrollStudentStmt: %w", cerr)
+		}
+	}
 	if q.getActiveQRCodeByCourseSectionIDStmt != nil {
 		if cerr := q.getActiveQRCodeByCourseSectionIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getActiveQRCodeByCourseSectionIDStmt: %w", cerr)
@@ -428,6 +445,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getCoursesBySemesterStmt: %w", cerr)
 		}
 	}
+	if q.getEnrollmentCountStmt != nil {
+		if cerr := q.getEnrollmentCountStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getEnrollmentCountStmt: %w", cerr)
+		}
+	}
 	if q.getFacultiesByUniversityIDStmt != nil {
 		if cerr := q.getFacultiesByUniversityIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getFacultiesByUniversityIDStmt: %w", cerr)
@@ -513,6 +535,11 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getUserByIDStmt: %w", cerr)
 		}
 	}
+	if q.isStudentEnrolledStmt != nil {
+		if cerr := q.isStudentEnrolledStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing isStudentEnrolledStmt: %w", cerr)
+		}
+	}
 	if q.listFacultiesStmt != nil {
 		if cerr := q.listFacultiesStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listFacultiesStmt: %w", cerr)
@@ -526,6 +553,11 @@ func (q *Queries) Close() error {
 	if q.listUsersStmt != nil {
 		if cerr := q.listUsersStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
+		}
+	}
+	if q.unenrollStudentStmt != nil {
+		if cerr := q.unenrollStudentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing unenrollStudentStmt: %w", cerr)
 		}
 	}
 	if q.updateAttendanceStmt != nil {
@@ -633,6 +665,7 @@ type Queries struct {
 	deleteUniversityStmt                 *sql.Stmt
 	deleteUserStmt                       *sql.Stmt
 	deleteUserRefreshTokensStmt          *sql.Stmt
+	enrollStudentStmt                    *sql.Stmt
 	getActiveQRCodeByCourseSectionIDStmt *sql.Stmt
 	getAllStmt                           *sql.Stmt
 	getAllCoursesStmt                    *sql.Stmt
@@ -651,6 +684,7 @@ type Queries struct {
 	getCourseSectionsByTeacherIDStmt     *sql.Stmt
 	getCoursesByFacultyIDStmt            *sql.Stmt
 	getCoursesBySemesterStmt             *sql.Stmt
+	getEnrollmentCountStmt               *sql.Stmt
 	getFacultiesByUniversityIDStmt       *sql.Stmt
 	getFacultyByIDStmt                   *sql.Stmt
 	getFacultyByNameStmt                 *sql.Stmt
@@ -668,9 +702,11 @@ type Queries struct {
 	getUniversityByNameStmt              *sql.Stmt
 	getUserByEmailStmt                   *sql.Stmt
 	getUserByIDStmt                      *sql.Stmt
+	isStudentEnrolledStmt                *sql.Stmt
 	listFacultiesStmt                    *sql.Stmt
 	listUniversitiesStmt                 *sql.Stmt
 	listUsersStmt                        *sql.Stmt
+	unenrollStudentStmt                  *sql.Stmt
 	updateAttendanceStmt                 *sql.Stmt
 	updateClassroomStmt                  *sql.Stmt
 	updateCourseStmt                     *sql.Stmt
@@ -707,6 +743,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		deleteUniversityStmt:                 q.deleteUniversityStmt,
 		deleteUserStmt:                       q.deleteUserStmt,
 		deleteUserRefreshTokensStmt:          q.deleteUserRefreshTokensStmt,
+		enrollStudentStmt:                    q.enrollStudentStmt,
 		getActiveQRCodeByCourseSectionIDStmt: q.getActiveQRCodeByCourseSectionIDStmt,
 		getAllStmt:                           q.getAllStmt,
 		getAllCoursesStmt:                    q.getAllCoursesStmt,
@@ -725,6 +762,7 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getCourseSectionsByTeacherIDStmt:     q.getCourseSectionsByTeacherIDStmt,
 		getCoursesByFacultyIDStmt:            q.getCoursesByFacultyIDStmt,
 		getCoursesBySemesterStmt:             q.getCoursesBySemesterStmt,
+		getEnrollmentCountStmt:               q.getEnrollmentCountStmt,
 		getFacultiesByUniversityIDStmt:       q.getFacultiesByUniversityIDStmt,
 		getFacultyByIDStmt:                   q.getFacultyByIDStmt,
 		getFacultyByNameStmt:                 q.getFacultyByNameStmt,
@@ -742,9 +780,11 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		getUniversityByNameStmt:              q.getUniversityByNameStmt,
 		getUserByEmailStmt:                   q.getUserByEmailStmt,
 		getUserByIDStmt:                      q.getUserByIDStmt,
+		isStudentEnrolledStmt:                q.isStudentEnrolledStmt,
 		listFacultiesStmt:                    q.listFacultiesStmt,
 		listUniversitiesStmt:                 q.listUniversitiesStmt,
 		listUsersStmt:                        q.listUsersStmt,
+		unenrollStudentStmt:                  q.unenrollStudentStmt,
 		updateAttendanceStmt:                 q.updateAttendanceStmt,
 		updateClassroomStmt:                  q.updateClassroomStmt,
 		updateCourseStmt:                     q.updateCourseStmt,

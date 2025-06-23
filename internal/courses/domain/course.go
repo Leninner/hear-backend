@@ -44,4 +44,10 @@ type Repository interface {
 	GetSectionsByTeacherID(teacherID uuid.UUID) ([]*CourseSection, error)
 	UpdateSection(section *CourseSection) error
 	DeleteSection(id uuid.UUID) error
+	
+	// Enrollment methods
+	EnrollStudent(sectionID, studentID uuid.UUID) error
+	GetEnrollmentCount(sectionID uuid.UUID) (int, error)
+	IsStudentEnrolled(sectionID, studentID uuid.UUID) (bool, error)
+	UnenrollStudent(sectionID, studentID uuid.UUID) error
 } 

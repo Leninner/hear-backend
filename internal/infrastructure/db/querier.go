@@ -34,6 +34,7 @@ type Querier interface {
 	DeleteUniversity(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
+	EnrollStudent(ctx context.Context, arg EnrollStudentParams) (SectionEnrollment, error)
 	GetActiveQRCodeByCourseSectionID(ctx context.Context, courseSectionID uuid.UUID) (QrCode, error)
 	GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, error)
 	GetAllCourses(ctx context.Context) ([]Course, error)
@@ -52,6 +53,7 @@ type Querier interface {
 	GetCourseSectionsByTeacherID(ctx context.Context, teacherID uuid.UUID) ([]CourseSection, error)
 	GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID) ([]Course, error)
 	GetCoursesBySemester(ctx context.Context, semester sql.NullString) ([]Course, error)
+	GetEnrollmentCount(ctx context.Context, sectionID uuid.UUID) (int64, error)
 	GetFacultiesByUniversityID(ctx context.Context, universityID uuid.UUID) ([]Faculty, error)
 	GetFacultyByID(ctx context.Context, id uuid.UUID) (Faculty, error)
 	GetFacultyByName(ctx context.Context, name string) (Faculty, error)
@@ -69,9 +71,11 @@ type Querier interface {
 	GetUniversityByName(ctx context.Context, name string) (University, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	IsStudentEnrolled(ctx context.Context, arg IsStudentEnrolledParams) (bool, error)
 	ListFaculties(ctx context.Context) ([]Faculty, error)
 	ListUniversities(ctx context.Context) ([]University, error)
 	ListUsers(ctx context.Context) ([]User, error)
+	UnenrollStudent(ctx context.Context, arg UnenrollStudentParams) error
 	UpdateAttendance(ctx context.Context, arg UpdateAttendanceParams) (Attendance, error)
 	UpdateClassroom(ctx context.Context, arg UpdateClassroomParams) (Classroom, error)
 	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
