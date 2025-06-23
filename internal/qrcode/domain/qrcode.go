@@ -7,23 +7,23 @@ import (
 )
 
 type QRCode struct {
-	ID        uuid.UUID `json:"id"`
-	CourseID  uuid.UUID `json:"courseId"`
-	Code      string    `json:"code"`
-	ExpiresAt time.Time `json:"expiresAt"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID              uuid.UUID `json:"id"`
+	CourseSectionID uuid.UUID `json:"courseSectionId"`
+	Code            string    `json:"code"`
+	ExpiresAt       time.Time `json:"expiresAt"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
-func NewQRCode(courseID uuid.UUID, code string, expiresAt time.Time) *QRCode {
+func NewQRCode(courseSectionID uuid.UUID, code string, expiresAt time.Time) *QRCode {
 	now := time.Now()
 	return &QRCode{
-		ID:        uuid.New(),
-		CourseID:  courseID,
-		Code:      code,
-		ExpiresAt: expiresAt,
-		CreatedAt: now,
-		UpdatedAt: now,
+		ID:              uuid.New(),
+		CourseSectionID: courseSectionID,
+		Code:            code,
+		ExpiresAt:       expiresAt,
+		CreatedAt:       now,
+		UpdatedAt:       now,
 	}
 }
 
@@ -35,8 +35,8 @@ type Repository interface {
 	Create(qrcode *QRCode) error
 	GetByID(id uuid.UUID) (*QRCode, error)
 	GetByCode(code string) (*QRCode, error)
-	GetByCourseID(courseID uuid.UUID) ([]*QRCode, error)
-	GetActiveByCourseID(courseID uuid.UUID) (*QRCode, error)
+	GetByCourseSectionID(courseSectionID uuid.UUID) ([]*QRCode, error)
+	GetActiveByCourseSectionID(courseSectionID uuid.UUID) (*QRCode, error)
 	Update(qrcode *QRCode) error
 	Delete(id uuid.UUID) error
 } 

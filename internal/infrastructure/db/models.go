@@ -165,11 +165,11 @@ type Faculty struct {
 }
 
 type QrCode struct {
-	ID        uuid.UUID    `json:"id"`
-	CourseID  uuid.UUID    `json:"course_id"`
-	Code      string       `json:"code"`
-	ExpiresAt time.Time    `json:"expires_at"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	ID              uuid.UUID    `json:"id"`
+	CourseSectionID uuid.UUID    `json:"course_section_id"`
+	Code            string       `json:"code"`
+	ExpiresAt       time.Time    `json:"expires_at"`
+	CreatedAt       sql.NullTime `json:"created_at"`
 }
 
 type RefreshToken struct {

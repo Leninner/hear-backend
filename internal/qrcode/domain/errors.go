@@ -87,12 +87,13 @@ func NewInternalError(message string, err error) error {
 
 var (
 	ErrCourseIDRequired      = "course ID field is required and cannot be empty"
-	ErrCodeRequired          = "code field is required and cannot be empty"
-	ErrCodeTooShort          = "code must be at least 6 characters long"
-	ErrCodeTooLong           = "code cannot exceed 255 characters"
-	ErrExpiresAtRequired     = "expires at field is required and cannot be empty"
-	ErrExpiresAtCannotBePast = "expires at cannot be in the past"
-	ErrQRCodeExists          = NewConflictError("a QR code with this code already exists")
-	ErrQRCodeNotFound        = NewNotFoundError("QR code not found")
-	ErrInvalidID             = NewValidationError("invalid QR code ID format")
+	ErrCourseSectionIDRequired = "course section ID field is required and cannot be empty"
+	ErrCodeRequired            = "code field is required and cannot be empty"
+	ErrCodeTooShort            = "code must be at least 6 characters long"
+	ErrCodeTooLong             = "code cannot exceed 255 characters"
+	ErrExpiresAtRequired       = "expires at field is required and cannot be empty"
+	ErrExpiresAtCannotBePast   = "expires at cannot be in the past"
+	ErrQRCodeExists            = NewConflictError("a QR code with this code already exists")
+	ErrQRCodeNotFound          = NewNotFoundError("QR code not found")
+	ErrInvalidID               = NewValidationError("invalid QR code ID format")
 ) 

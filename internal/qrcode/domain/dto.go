@@ -7,16 +7,16 @@ import (
 )
 
 type CreateQRCodeDTO struct {
-	CourseID  uuid.UUID `json:"courseId"`
-	Code      string    `json:"code"`
-	ExpiresAt time.Time `json:"expiresAt"`
+	CourseSectionID uuid.UUID `json:"courseSectionId"`
+	Code            string    `json:"code"`
+	ExpiresAt       time.Time `json:"expiresAt"`
 }
 
 func (dto *CreateQRCodeDTO) Validate() error {
 	validationErrors := NewValidationErrors()
 
-	if dto.CourseID == uuid.Nil {
-		validationErrors.AddError(ErrCourseIDRequired)
+	if dto.CourseSectionID == uuid.Nil {
+		validationErrors.AddError(ErrCourseSectionIDRequired)
 	}
 
 	if dto.Code == "" {

@@ -1,8 +1,6 @@
 package application
 
 import (
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/qrcode/domain"
@@ -19,20 +17,22 @@ func NewHandler(useCase *UseCase) *Handler {
 }
 
 func (h *Handler) CreateQRCode(c *fiber.Ctx) error {
-	var input struct {
-		CourseID  uuid.UUID `json:"courseId"`
-		Code      string    `json:"code"`
-		ExpiresAt time.Time `json:"expiresAt"`
-	}
+	var dto domain.CreateQRCodeDTO
 
-	if err := c.BodyParser(&input); err != nil {
+	if err := c.BodyParser(&dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid input",
 		})
 	}
 
-	qrcode, err := h.useCase.CreateQRCode(input.CourseID, input.Code, input.ExpiresAt)
+	qrcode, err := h.useCase.CreateQRCode(&dto)
 	if err != nil {
+		if validationErrors, ok := err.(*domain.ValidationErrors); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "Validation failed",
+				"details": validationErrors.GetErrors(),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create QR code",
 		})
@@ -71,18 +71,18 @@ func (h *Handler) GetQRCodeByCode(c *fiber.Ctx) error {
 	return c.JSON(qrcode)
 }
 
-func (h *Handler) GetCourseQRCodes(c *fiber.Ctx) error {
-	courseID, err := uuid.Parse(c.Params("courseId"))
+func (h *Handler) GetCourseSectionQRCodes(c *fiber.Ctx) error {
+	courseSectionID, err := uuid.Parse(c.Params("courseSectionId"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid course ID",
+			"error": "Invalid course section ID",
 		})
 	}
 
-	qrcodes, err := h.useCase.GetCourseQRCodes(courseID)
+	qrcodes, err := h.useCase.GetCourseSectionQRCodes(courseSectionID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to fetch course QR codes",
+			"error": "Failed to fetch course section QR codes",
 		})
 	}
 
@@ -90,14 +90,14 @@ func (h *Handler) GetCourseQRCodes(c *fiber.Ctx) error {
 }
 
 func (h *Handler) GetActiveQRCode(c *fiber.Ctx) error {
-	courseID, err := uuid.Parse(c.Params("courseId"))
+	courseSectionID, err := uuid.Parse(c.Params("courseSectionId"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid course ID",
+			"error": "Invalid course section ID",
 		})
 	}
 
-	qrcode, err := h.useCase.GetActiveQRCode(courseID)
+	qrcode, err := h.useCase.GetActiveQRCode(courseSectionID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"error": "No active QR code found",
@@ -115,15 +115,21 @@ func (h *Handler) UpdateQRCode(c *fiber.Ctx) error {
 		})
 	}
 
-	var qrcode domain.QRCode
-	if err := c.BodyParser(&qrcode); err != nil {
+	var dto domain.UpdateQRCodeDTO
+	if err := c.BodyParser(&dto); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid input",
 		})
 	}
 
-	qrcode.ID = id
-	if err := h.useCase.UpdateQRCode(&qrcode); err != nil {
+	qrcode, err := h.useCase.UpdateQRCode(id, &dto)
+	if err != nil {
+		if validationErrors, ok := err.(*domain.ValidationErrors); ok {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "Validation failed",
+				"details": validationErrors.GetErrors(),
+			})
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update QR code",
 		})

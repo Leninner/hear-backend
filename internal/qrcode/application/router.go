@@ -6,8 +6,8 @@ func SetupRoutes(router fiber.Router, handler *Handler) {
 	router.Post("/", handler.CreateQRCode)
 	router.Get("/:id", handler.GetQRCode)
 	router.Get("/code/:code", handler.GetQRCodeByCode)
-	router.Get("/course/:courseId", handler.GetCourseQRCodes)
-	router.Get("/course/:courseId/active", handler.GetActiveQRCode)
+	router.Get("/course-section/:courseSectionId", handler.GetCourseSectionQRCodes)
+	router.Get("/course-section/:courseSectionId/active", handler.GetActiveQRCode)
 	router.Put("/:id", handler.UpdateQRCode)
 	router.Delete("/:id", handler.DeleteQRCode)
 } 

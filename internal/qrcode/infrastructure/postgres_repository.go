@@ -3,7 +3,6 @@ package infrastructure
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/leninner/hear-backend/internal/infrastructure/db"
@@ -24,9 +23,9 @@ func (r *PostgresRepository) Create(qrcode *domain.QRCode) error {
 	ctx := context.Background()
 	
 	params := db.CreateQRCodeParams{
-		CourseID:  qrcode.CourseID,
-		Code:      qrcode.Code,
-		ExpiresAt: qrcode.ExpiresAt,
+		CourseSectionID: qrcode.CourseSectionID,
+		Code:            qrcode.Code,
+		ExpiresAt:       qrcode.ExpiresAt,
 	}
 	
 	_, err := r.db.CreateQRCode(ctx, params)
@@ -36,16 +35,12 @@ func (r *PostgresRepository) Create(qrcode *domain.QRCode) error {
 func (r *PostgresRepository) GetByID(id uuid.UUID) (*domain.QRCode, error) {
 	ctx := context.Background()
 	
-	dbQRCodes, err := r.db.GetQRCodesByCourseID(ctx, id)
+	dbQRCode, err := r.db.GetQRCodeByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("QR code not found")
 	}
 	
-	if len(dbQRCodes) == 0 {
-		return nil, errors.New("QR code not found")
-	}
-	
-	return r.mapToDomain(&dbQRCodes[0]), nil
+	return r.mapToDomain(&dbQRCode), nil
 }
 
 func (r *PostgresRepository) GetByCode(code string) (*domain.QRCode, error) {
@@ -59,10 +54,10 @@ func (r *PostgresRepository) GetByCode(code string) (*domain.QRCode, error) {
 	return r.mapToDomain(&dbQRCode), nil
 }
 
-func (r *PostgresRepository) GetByCourseID(courseID uuid.UUID) ([]*domain.QRCode, error) {
+func (r *PostgresRepository) GetByCourseSectionID(courseSectionID uuid.UUID) ([]*domain.QRCode, error) {
 	ctx := context.Background()
 	
-	dbQRCodes, err := r.db.GetQRCodesByCourseID(ctx, courseID)
+	dbQRCodes, err := r.db.GetQRCodesByCourseSectionID(ctx, courseSectionID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,26 +70,28 @@ func (r *PostgresRepository) GetByCourseID(courseID uuid.UUID) ([]*domain.QRCode
 	return qrcodes, nil
 }
 
-func (r *PostgresRepository) GetActiveByCourseID(courseID uuid.UUID) (*domain.QRCode, error) {
+func (r *PostgresRepository) GetActiveByCourseSectionID(courseSectionID uuid.UUID) (*domain.QRCode, error) {
 	ctx := context.Background()
 	
-	dbQRCodes, err := r.db.GetQRCodesByCourseID(ctx, courseID)
+	dbQRCode, err := r.db.GetActiveQRCodeByCourseSectionID(ctx, courseSectionID)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("no active QR code found")
 	}
 	
-	now := time.Now()
-	for _, dbQRCode := range dbQRCodes {
-		if dbQRCode.ExpiresAt.After(now) {
-			return r.mapToDomain(&dbQRCode), nil
-		}
-	}
-	
-	return nil, errors.New("no active QR code found")
+	return r.mapToDomain(&dbQRCode), nil
 }
 
 func (r *PostgresRepository) Update(qrcode *domain.QRCode) error {
-	return errors.New("update operation not implemented in generated queries")
+	ctx := context.Background()
+	
+	params := db.UpdateQRCodeParams{
+		ID:        qrcode.ID,
+		Code:      qrcode.Code,
+		ExpiresAt: qrcode.ExpiresAt,
+	}
+	
+	_, err := r.db.UpdateQRCode(ctx, params)
+	return err
 }
 
 func (r *PostgresRepository) Delete(id uuid.UUID) error {
@@ -110,10 +107,10 @@ func (r *PostgresRepository) Delete(id uuid.UUID) error {
 
 func (r *PostgresRepository) mapToDomain(dbQRCode *db.QrCode) *domain.QRCode {
 	qrcode := &domain.QRCode{
-		ID:        dbQRCode.ID,
-		CourseID:  dbQRCode.CourseID,
-		Code:      dbQRCode.Code,
-		ExpiresAt: dbQRCode.ExpiresAt,
+		ID:              dbQRCode.ID,
+		CourseSectionID: dbQRCode.CourseSectionID,
+		Code:            dbQRCode.Code,
+		ExpiresAt:       dbQRCode.ExpiresAt,
 	}
 	
 	if dbQRCode.CreatedAt.Valid {

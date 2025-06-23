@@ -34,6 +34,7 @@ type Querier interface {
 	DeleteUniversity(ctx context.Context, id uuid.UUID) error
 	DeleteUser(ctx context.Context, id uuid.UUID) error
 	DeleteUserRefreshTokens(ctx context.Context, userID uuid.UUID) error
+	GetActiveQRCodeByCourseSectionID(ctx context.Context, courseSectionID uuid.UUID) (QrCode, error)
 	GetAll(ctx context.Context, arg GetAllParams) ([]Classroom, error)
 	GetAllCourses(ctx context.Context) ([]Course, error)
 	GetAttendanceByDate(ctx context.Context, date time.Time) ([]Attendance, error)
@@ -56,7 +57,8 @@ type Querier interface {
 	GetFacultyByName(ctx context.Context, name string) (Faculty, error)
 	GetNearbyClassrooms(ctx context.Context, arg GetNearbyClassroomsParams) ([]GetNearbyClassroomsRow, error)
 	GetQRCodeByCode(ctx context.Context, code string) (QrCode, error)
-	GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) ([]QrCode, error)
+	GetQRCodeByID(ctx context.Context, id uuid.UUID) (QrCode, error)
+	GetQRCodesByCourseSectionID(ctx context.Context, courseSectionID uuid.UUID) ([]QrCode, error)
 	GetRefreshToken(ctx context.Context, token string) (uuid.UUID, error)
 	GetScheduleByID(ctx context.Context, id uuid.UUID) (Schedule, error)
 	GetSchedulesByClassroomAndTime(ctx context.Context, arg GetSchedulesByClassroomAndTimeParams) ([]Schedule, error)
@@ -75,6 +77,7 @@ type Querier interface {
 	UpdateCourse(ctx context.Context, arg UpdateCourseParams) (Course, error)
 	UpdateCourseSection(ctx context.Context, arg UpdateCourseSectionParams) (CourseSection, error)
 	UpdateFaculty(ctx context.Context, arg UpdateFacultyParams) (Faculty, error)
+	UpdateQRCode(ctx context.Context, arg UpdateQRCodeParams) (QrCode, error)
 	UpdateSchedule(ctx context.Context, arg UpdateScheduleParams) (Schedule, error)
 	UpdateUniversity(ctx context.Context, arg UpdateUniversityParams) (University, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

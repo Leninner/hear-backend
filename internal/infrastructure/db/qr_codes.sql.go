@@ -14,26 +14,26 @@ import (
 
 const createQRCode = `-- name: CreateQRCode :one
 INSERT INTO qr_codes (
-    course_id,
+    course_section_id,
     code,
     expires_at
 ) VALUES (
     $1, $2, $3
-) RETURNING id, course_id, code, expires_at, created_at
+) RETURNING id, course_section_id, code, expires_at, created_at
 `
 
 type CreateQRCodeParams struct {
-	CourseID  uuid.UUID `json:"course_id"`
-	Code      string    `json:"code"`
-	ExpiresAt time.Time `json:"expires_at"`
+	CourseSectionID uuid.UUID `json:"course_section_id"`
+	Code            string    `json:"code"`
+	ExpiresAt       time.Time `json:"expires_at"`
 }
 
 func (q *Queries) CreateQRCode(ctx context.Context, arg CreateQRCodeParams) (QrCode, error) {
-	row := q.queryRow(ctx, q.createQRCodeStmt, createQRCode, arg.CourseID, arg.Code, arg.ExpiresAt)
+	row := q.queryRow(ctx, q.createQRCodeStmt, createQRCode, arg.CourseSectionID, arg.Code, arg.ExpiresAt)
 	var i QrCode
 	err := row.Scan(
 		&i.ID,
-		&i.CourseID,
+		&i.CourseSectionID,
 		&i.Code,
 		&i.ExpiresAt,
 		&i.CreatedAt,
@@ -51,8 +51,29 @@ func (q *Queries) DeleteQRCode(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const getActiveQRCodeByCourseSectionID = `-- name: GetActiveQRCodeByCourseSectionID :one
+SELECT id, course_section_id, code, expires_at, created_at FROM qr_codes
+WHERE course_section_id = $1 
+AND expires_at > NOW()
+ORDER BY created_at DESC
+LIMIT 1
+`
+
+func (q *Queries) GetActiveQRCodeByCourseSectionID(ctx context.Context, courseSectionID uuid.UUID) (QrCode, error) {
+	row := q.queryRow(ctx, q.getActiveQRCodeByCourseSectionIDStmt, getActiveQRCodeByCourseSectionID, courseSectionID)
+	var i QrCode
+	err := row.Scan(
+		&i.ID,
+		&i.CourseSectionID,
+		&i.Code,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getQRCodeByCode = `-- name: GetQRCodeByCode :one
-SELECT id, course_id, code, expires_at, created_at FROM qr_codes
+SELECT id, course_section_id, code, expires_at, created_at FROM qr_codes
 WHERE code = $1 LIMIT 1
 `
 
@@ -61,7 +82,7 @@ func (q *Queries) GetQRCodeByCode(ctx context.Context, code string) (QrCode, err
 	var i QrCode
 	err := row.Scan(
 		&i.ID,
-		&i.CourseID,
+		&i.CourseSectionID,
 		&i.Code,
 		&i.ExpiresAt,
 		&i.CreatedAt,
@@ -69,13 +90,31 @@ func (q *Queries) GetQRCodeByCode(ctx context.Context, code string) (QrCode, err
 	return i, err
 }
 
-const getQRCodesByCourseID = `-- name: GetQRCodesByCourseID :many
-SELECT id, course_id, code, expires_at, created_at FROM qr_codes
-WHERE course_id = $1
+const getQRCodeByID = `-- name: GetQRCodeByID :one
+SELECT id, course_section_id, code, expires_at, created_at FROM qr_codes
+WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) ([]QrCode, error) {
-	rows, err := q.query(ctx, q.getQRCodesByCourseIDStmt, getQRCodesByCourseID, courseID)
+func (q *Queries) GetQRCodeByID(ctx context.Context, id uuid.UUID) (QrCode, error) {
+	row := q.queryRow(ctx, q.getQRCodeByIDStmt, getQRCodeByID, id)
+	var i QrCode
+	err := row.Scan(
+		&i.ID,
+		&i.CourseSectionID,
+		&i.Code,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getQRCodesByCourseSectionID = `-- name: GetQRCodesByCourseSectionID :many
+SELECT id, course_section_id, code, expires_at, created_at FROM qr_codes
+WHERE course_section_id = $1
+`
+
+func (q *Queries) GetQRCodesByCourseSectionID(ctx context.Context, courseSectionID uuid.UUID) ([]QrCode, error) {
+	rows, err := q.query(ctx, q.getQRCodesByCourseSectionIDStmt, getQRCodesByCourseSectionID, courseSectionID)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +124,7 @@ func (q *Queries) GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) 
 		var i QrCode
 		if err := rows.Scan(
 			&i.ID,
-			&i.CourseID,
+			&i.CourseSectionID,
 			&i.Code,
 			&i.ExpiresAt,
 			&i.CreatedAt,
@@ -101,4 +140,30 @@ func (q *Queries) GetQRCodesByCourseID(ctx context.Context, courseID uuid.UUID) 
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateQRCode = `-- name: UpdateQRCode :one
+UPDATE qr_codes
+SET code = $2, expires_at = $3, updated_at = NOW()
+WHERE id = $1
+RETURNING id, course_section_id, code, expires_at, created_at
+`
+
+type UpdateQRCodeParams struct {
+	ID        uuid.UUID `json:"id"`
+	Code      string    `json:"code"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (q *Queries) UpdateQRCode(ctx context.Context, arg UpdateQRCodeParams) (QrCode, error) {
+	row := q.queryRow(ctx, q.updateQRCodeStmt, updateQRCode, arg.ID, arg.Code, arg.ExpiresAt)
+	var i QrCode
+	err := row.Scan(
+		&i.ID,
+		&i.CourseSectionID,
+		&i.Code,
+		&i.ExpiresAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
