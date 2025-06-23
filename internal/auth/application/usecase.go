@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -34,6 +35,7 @@ func (uc *UseCase) Login(dto *domain.LoginDTO) (*domain.AuthResponse, error) {
 
 	user, err := uc.userRepository.GetByEmail(dto.Email)
 	if err != nil {
+		fmt.Println("Error getting user by email:", err)
 		return nil, domain.ErrInvalidCredentials
 	}
 
