@@ -1,4 +1,4 @@
-.PHONY: build build-local build-prod run-prod run clean dev test test-coverage migrate-up migrate-down sqlc-generate db-reset up-db install-tools fmt lint deps
+.PHONY: build build-local build-prod run-prod run clean dev test test-coverage migrate-up migrate-down sqlc-generate db-reset up-db install-tools fmt lint deps up down logs
 
 # Development
 dev:
@@ -16,11 +16,21 @@ run-local:
 	go run cmd/main.go
 
 run-prod:
-	docker compose up
+	docker compose up -d
+
+# Docker Compose Management
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
+
+logs:
+	docker compose logs -f
 
 # Database
 up-db:
-	docker compose up -d postgres
+	docker compose up -d db
 
 migrate-up:
 	migrate -path db/migrations -database "postgres://hear:hear@localhost:5432/hear?sslmode=disable" up

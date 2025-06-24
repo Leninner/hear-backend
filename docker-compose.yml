@@ -6,16 +6,32 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
-    command:
-      [
-        "./main",
-        "--db-host=db",
-        "--db-port=5432",
-        "--db-user=hear",
-        "--db-password=hear",
-        "--db-name=hear",
-      ]
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=hear
+      - DB_PASSWORD=hear
+      - DB_NAME=hear
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    command: -path=/migrations -database "postgres://hear:hear@db:5432/hear?sslmode=disable" up
+    volumes:
+      - ./db/migrations:/migrations
 
   db:
     image: postgres:16-alpine
@@ -27,6 +43,13 @@ services:
       - POSTGRES_DB=hear
     volumes:
       - hear_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hear -d hear"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
   hear_postgres_data:
