@@ -206,3 +206,29 @@ func (uc *UseCase) EnrollInSection(sectionID uuid.UUID, dto *domain.EnrollInSect
 
 	return section, nil
 }
+
+func (uc *UseCase) GetEnrollmentsWithDetailsBySection(sectionID uuid.UUID) (*domain.SectionEnrollmentsWithDetailsDTO, error) {
+	// Get section data
+	section, err := uc.repository.GetSectionByID(sectionID)
+	if err != nil {
+		return nil, domain.NewNotFoundError("section not found")
+	}
+
+	// Get enrollments with student details
+	enrollments, err := uc.repository.GetEnrollmentsWithDetailsBySection(sectionID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve enrollments with details from database", err)
+	}
+
+	// Get total count
+	totalCount, err := uc.repository.GetEnrollmentCount(sectionID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to get enrollment count", err)
+	}
+
+	return &domain.SectionEnrollmentsWithDetailsDTO{
+		Section:     section,
+		Enrollments: enrollments,
+		TotalCount:  totalCount,
+	}, nil
+}

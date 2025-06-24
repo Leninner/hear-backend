@@ -54,4 +54,23 @@ SELECT EXISTS(
 
 -- name: UnenrollStudent :exec
 DELETE FROM section_enrollments
-WHERE section_id = $1 AND student_id = $2; 
+WHERE section_id = $1 AND student_id = $2;
+
+-- name: GetEnrollmentsWithDetailsBySection :many
+SELECT 
+    se.id,
+    se.section_id,
+    se.student_id,
+    se.created_at,
+    se.updated_at,
+    u.id as student_id,
+    u.email,
+    u.first_name,
+    u.last_name,
+    u.role,
+    u.created_at as user_created_at,
+    u.updated_at as user_updated_at
+FROM section_enrollments se
+JOIN users u ON se.student_id = u.id
+WHERE se.section_id = $1
+ORDER BY se.created_at; 

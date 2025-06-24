@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -188,6 +189,77 @@ func (q *Queries) GetEnrollmentCount(ctx context.Context, sectionID uuid.UUID) (
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const getEnrollmentsWithDetailsBySection = `-- name: GetEnrollmentsWithDetailsBySection :many
+SELECT 
+    se.id,
+    se.section_id,
+    se.student_id,
+    se.created_at,
+    se.updated_at,
+    u.id as student_id,
+    u.email,
+    u.first_name,
+    u.last_name,
+    u.role,
+    u.created_at as user_created_at,
+    u.updated_at as user_updated_at
+FROM section_enrollments se
+JOIN users u ON se.student_id = u.id
+WHERE se.section_id = $1
+ORDER BY se.created_at
+`
+
+type GetEnrollmentsWithDetailsBySectionRow struct {
+	ID            uuid.UUID    `json:"id"`
+	SectionID     uuid.UUID    `json:"section_id"`
+	StudentID     uuid.UUID    `json:"student_id"`
+	CreatedAt     sql.NullTime `json:"created_at"`
+	UpdatedAt     sql.NullTime `json:"updated_at"`
+	StudentID_2   uuid.UUID    `json:"student_id_2"`
+	Email         string       `json:"email"`
+	FirstName     string       `json:"first_name"`
+	LastName      string       `json:"last_name"`
+	Role          UserRole     `json:"role"`
+	UserCreatedAt sql.NullTime `json:"user_created_at"`
+	UserUpdatedAt sql.NullTime `json:"user_updated_at"`
+}
+
+func (q *Queries) GetEnrollmentsWithDetailsBySection(ctx context.Context, sectionID uuid.UUID) ([]GetEnrollmentsWithDetailsBySectionRow, error) {
+	rows, err := q.query(ctx, q.getEnrollmentsWithDetailsBySectionStmt, getEnrollmentsWithDetailsBySection, sectionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetEnrollmentsWithDetailsBySectionRow{}
+	for rows.Next() {
+		var i GetEnrollmentsWithDetailsBySectionRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.SectionID,
+			&i.StudentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.StudentID_2,
+			&i.Email,
+			&i.FirstName,
+			&i.LastName,
+			&i.Role,
+			&i.UserCreatedAt,
+			&i.UserUpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const isStudentEnrolled = `-- name: IsStudentEnrolled :one

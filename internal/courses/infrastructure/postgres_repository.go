@@ -376,4 +376,48 @@ func (r *PostgresRepository) UnenrollStudent(sectionID, studentID uuid.UUID) err
 	}
 
 	return r.queries.UnenrollStudent(ctx, params)
+}
+
+func (r *PostgresRepository) GetEnrollmentsWithDetailsBySection(sectionID uuid.UUID) ([]*domain.EnrollmentWithStudentDetails, error) {
+	ctx := context.Background()
+
+	enrollments, err := r.queries.GetEnrollmentsWithDetailsBySection(ctx, sectionID)
+	if err != nil {
+		return nil, err
+	}
+
+	var domainEnrollments []*domain.EnrollmentWithStudentDetails
+	for _, enrollment := range enrollments {
+		// Create student object
+		student := &domain.Student{
+			ID:        enrollment.StudentID_2,
+			Email:     enrollment.Email,
+			FirstName: enrollment.FirstName,
+			LastName:  enrollment.LastName,
+			Role:      string(enrollment.Role),
+		}
+		if enrollment.UserCreatedAt.Valid {
+			student.CreatedAt = enrollment.UserCreatedAt.Time
+		}
+		if enrollment.UserUpdatedAt.Valid {
+			student.UpdatedAt = enrollment.UserUpdatedAt.Time
+		}
+
+		// Create enrollment with student details
+		domainEnrollment := &domain.EnrollmentWithStudentDetails{
+			ID:        enrollment.ID,
+			SectionID: enrollment.SectionID,
+			StudentID: enrollment.StudentID,
+			Student:   student,
+		}
+		if enrollment.CreatedAt.Valid {
+			domainEnrollment.CreatedAt = enrollment.CreatedAt.Time
+		}
+		if enrollment.UpdatedAt.Valid {
+			domainEnrollment.UpdatedAt = enrollment.UpdatedAt.Time
+		}
+		domainEnrollments = append(domainEnrollments, domainEnrollment)
+	}
+
+	return domainEnrollments, nil
 } 

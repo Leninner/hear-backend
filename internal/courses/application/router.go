@@ -18,4 +18,5 @@ func SetupRoutes(router fiber.Router, handler *Handler) {
 	router.Put("/sections/:id", handler.UpdateSection)
 	router.Delete("/sections/:id", handler.DeleteSection)
 	router.Post("/sections/:id/enroll", handler.EnrollInSection)
+	router.Get("/sections/:id/enrollments", handler.GetEnrollmentsWithDetailsBySection)
 } 

@@ -54,6 +54,7 @@ type Querier interface {
 	GetCoursesByFacultyID(ctx context.Context, facultyID uuid.UUID) ([]Course, error)
 	GetCoursesBySemester(ctx context.Context, semester sql.NullString) ([]Course, error)
 	GetEnrollmentCount(ctx context.Context, sectionID uuid.UUID) (int64, error)
+	GetEnrollmentsWithDetailsBySection(ctx context.Context, sectionID uuid.UUID) ([]GetEnrollmentsWithDetailsBySectionRow, error)
 	GetFacultiesByUniversityID(ctx context.Context, universityID uuid.UUID) ([]Faculty, error)
 	GetFacultyByID(ctx context.Context, id uuid.UUID) (Faculty, error)
 	GetFacultyByName(ctx context.Context, name string) (Faculty, error)

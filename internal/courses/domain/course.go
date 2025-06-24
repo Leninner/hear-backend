@@ -15,6 +15,45 @@ type Course struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type Enrollment struct {
+	ID         uuid.UUID `json:"id"`
+	SectionID  uuid.UUID `json:"sectionId"`
+	StudentID  uuid.UUID `json:"studentId"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+}
+
+type EnrollmentWithStudentDetails struct {
+	ID         uuid.UUID `json:"id"`
+	SectionID  uuid.UUID `json:"sectionId"`
+	StudentID  uuid.UUID `json:"studentId"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+	Student    *Student  `json:"student"`
+}
+
+type Student struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type SectionEnrollmentsDTO struct {
+	Section     *CourseSection `json:"section"`
+	Enrollments []*Enrollment  `json:"enrollments"`
+	TotalCount  int            `json:"totalCount"`
+}
+
+type SectionEnrollmentsWithDetailsDTO struct {
+	Section     *CourseSection                `json:"section"`
+	Enrollments []*EnrollmentWithStudentDetails `json:"enrollments"`
+	TotalCount  int                           `json:"totalCount"`
+}
+
 func NewCourse(name string, facultyID uuid.UUID, semester string) *Course {
 	now := time.Now()
 	return &Course{
@@ -50,4 +89,5 @@ type Repository interface {
 	GetEnrollmentCount(sectionID uuid.UUID) (int, error)
 	IsStudentEnrolled(sectionID, studentID uuid.UUID) (bool, error)
 	UnenrollStudent(sectionID, studentID uuid.UUID) error
+	GetEnrollmentsWithDetailsBySection(sectionID uuid.UUID) ([]*EnrollmentWithStudentDetails, error)
 } 
