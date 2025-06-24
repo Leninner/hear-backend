@@ -991,7 +991,7 @@
 							"variable": [
 								{
 									"key": "courseId",
-									"value": "a63dc7de-96c9-4c87-98a5-77742af9d9fa"
+									"value": "990e8400-e29b-41d4-a716-446655440001"
 								}
 							]
 						},
@@ -1105,6 +1105,16 @@
 				{
 					"name": "Enroll in Section",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [
 							{
@@ -1118,10 +1128,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"studentId\": \"{{student_id}}\"\n}"
+							"raw": "{\n  \"studentId\": \"770e8400-e29b-41d4-a716-446655440012\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/courses/sections/{{section_id}}/enroll",
+							"raw": "{{base_url}}/api/courses/sections/:sectionId/enroll",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1129,11 +1139,54 @@
 								"api",
 								"courses",
 								"sections",
-								"{{section_id}}",
+								":sectionId",
 								"enroll"
+							],
+							"variable": [
+								{
+									"key": "sectionId",
+									"value": "aa0e8400-e29b-41d4-a716-446655440001"
+								}
 							]
 						},
 						"description": "Enroll a student in a course section (Admin/Teacher/Student)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get enrollments by section",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/sections/:sectionId/enrollments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								"sections",
+								":sectionId",
+								"enrollments"
+							],
+							"variable": [
+								{
+									"key": "sectionId",
+									"value": "aa0e8400-e29b-41d4-a716-446655440001"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -1233,7 +1286,7 @@
 							"variable": [
 								{
 									"key": "courseId",
-									"value": "990e8400-e29b-41d4-a716-446655440011"
+									"value": "990e8400-e29b-41d4-a716-446655440001"
 								}
 							]
 						},
