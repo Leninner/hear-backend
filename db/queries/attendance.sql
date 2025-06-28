@@ -12,6 +12,13 @@ INSERT INTO attendance (
     $1, $2, $3, $4, $5, $6, $7, $8
 ) RETURNING *;
 
+-- name: GetAttendanceByStudentScheduleAndDate :one
+SELECT * FROM attendance
+WHERE student_id = $1
+AND schedule_id = $2
+AND date = $3
+LIMIT 1;
+
 -- name: GetAttendanceByID :one
 SELECT * FROM attendance
 WHERE id = $1 LIMIT 1;

@@ -17,7 +17,7 @@ const (
 )
 
 // Default maximum distance in meters for attendance validation
-const DefaultMaxDistanceMeters = 100
+const DefaultMaxDistanceMeters = 50
 
 type Attendance struct {
 	ID                uuid.UUID       `json:"id"`
@@ -82,6 +82,7 @@ type Repository interface {
 	GetByDate(date time.Time) ([]*Attendance, error)
 	Update(attendance *Attendance) error
 	Delete(id uuid.UUID) error
+	GetByStudentScheduleAndDate(studentID, scheduleID uuid.UUID, date time.Time) (*Attendance, error)
 }
 
 // ScheduleRepository interface for getting schedule information

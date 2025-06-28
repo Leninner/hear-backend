@@ -204,6 +204,20 @@ func (r *PostgresRepository) Delete(id uuid.UUID) error {
 	return errors.New("delete operation not implemented in generated queries")
 }
 
+func (r *PostgresRepository) GetByStudentScheduleAndDate(studentID, scheduleID uuid.UUID, date time.Time) (*domain.Attendance, error) {
+	ctx := context.Background()
+	params := db.GetAttendanceByStudentScheduleAndDateParams{
+		StudentID:  studentID,
+		ScheduleID: scheduleID,
+		Date:       date,
+	}
+	result, err := r.db.GetAttendanceByStudentScheduleAndDate(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+	return r.mapToDomain(&result), nil
+}
+
 func (r *PostgresRepository) mapToDomain(dbAttendance *db.Attendance) *domain.Attendance {
 	attendance := &domain.Attendance{
 		ID:                dbAttendance.ID,

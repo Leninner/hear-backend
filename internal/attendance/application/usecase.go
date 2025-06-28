@@ -36,36 +36,62 @@ func (uc *UseCase) CreateAttendanceWithLocation(
 	date time.Time,
 	userLatitude, userLongitude *float64,
 ) (*domain.Attendance, error) {
+	// Check if attendance already exists
+	existing, err := uc.repository.GetByStudentScheduleAndDate(studentID, classScheduleID, date)
+	if err == nil && existing != nil {
+		// Update existing attendance
+		existing.Status = status
+		if userLatitude != nil && userLongitude != nil {
+			existing.UserLatitude = userLatitude
+			existing.UserLongitude = userLongitude
+			// Get schedule to find classroom ID
+			schedule, err := uc.scheduleRepository.GetByID(classScheduleID)
+			if err != nil {
+				return nil, err
+			}
+			// Get classroom to get location coordinates
+			classroom, err := uc.classroomRepository.GetByID(schedule.ClassroomID)
+			if err != nil {
+				return nil, err
+			}
+			// Calculate distance between user and classroom
+			distance := domain.CalculateDistance(*userLatitude, *userLongitude, classroom.LocationLat, classroom.LocationLng)
+			existing.DistanceMeters = &distance
+			// Check if user is within allowed distance
+			if !existing.IsWithinDistance() {
+				return nil, domain.NewValidationError(domain.ErrDistanceTooFar)
+			}
+		}
+		err = uc.repository.Update(existing)
+		if err != nil {
+			return nil, err
+		}
+		return existing, nil
+	}
+	// If not found, create new attendance
 	attendance := domain.NewAttendance(studentID, classScheduleID, status, date)
-	
-	// If location is provided, validate it against classroom location
 	if userLatitude != nil && userLongitude != nil {
 		attendance.UserLatitude = userLatitude
 		attendance.UserLongitude = userLongitude
-		
 		// Get schedule to find classroom ID
 		schedule, err := uc.scheduleRepository.GetByID(classScheduleID)
 		if err != nil {
 			return nil, err
 		}
-		
 		// Get classroom to get location coordinates
 		classroom, err := uc.classroomRepository.GetByID(schedule.ClassroomID)
 		if err != nil {
 			return nil, err
 		}
-		
 		// Calculate distance between user and classroom
 		distance := domain.CalculateDistance(*userLatitude, *userLongitude, classroom.LocationLat, classroom.LocationLng)
 		attendance.DistanceMeters = &distance
-		
 		// Check if user is within allowed distance
 		if !attendance.IsWithinDistance() {
 			return nil, domain.NewValidationError(domain.ErrDistanceTooFar)
 		}
 	}
-	
-	err := uc.repository.Create(attendance)
+	err = uc.repository.Create(attendance)
 	if err != nil {
 		return nil, err
 	}

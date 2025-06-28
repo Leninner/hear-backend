@@ -42,6 +42,7 @@ type Querier interface {
 	GetAttendanceByID(ctx context.Context, id uuid.UUID) (Attendance, error)
 	GetAttendanceByScheduleID(ctx context.Context, arg GetAttendanceByScheduleIDParams) ([]Attendance, error)
 	GetAttendanceByStudentID(ctx context.Context, arg GetAttendanceByStudentIDParams) ([]Attendance, error)
+	GetAttendanceByStudentScheduleAndDate(ctx context.Context, arg GetAttendanceByStudentScheduleAndDateParams) (Attendance, error)
 	GetClassroomByID(ctx context.Context, id uuid.UUID) (Classroom, error)
 	GetClassroomByName(ctx context.Context, name string) (Classroom, error)
 	GetClassroomsByBuilding(ctx context.Context, building string) ([]Classroom, error)

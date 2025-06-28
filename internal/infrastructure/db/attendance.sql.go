@@ -224,6 +224,39 @@ func (q *Queries) GetAttendanceByStudentID(ctx context.Context, arg GetAttendanc
 	return items, nil
 }
 
+const getAttendanceByStudentScheduleAndDate = `-- name: GetAttendanceByStudentScheduleAndDate :one
+SELECT id, student_id, schedule_id, status, date, created_at, updated_at, user_latitude, user_longitude, distance_meters, max_distance_meters FROM attendance
+WHERE student_id = $1
+AND schedule_id = $2
+AND date = $3
+LIMIT 1
+`
+
+type GetAttendanceByStudentScheduleAndDateParams struct {
+	StudentID  uuid.UUID `json:"student_id"`
+	ScheduleID uuid.UUID `json:"schedule_id"`
+	Date       time.Time `json:"date"`
+}
+
+func (q *Queries) GetAttendanceByStudentScheduleAndDate(ctx context.Context, arg GetAttendanceByStudentScheduleAndDateParams) (Attendance, error) {
+	row := q.queryRow(ctx, q.getAttendanceByStudentScheduleAndDateStmt, getAttendanceByStudentScheduleAndDate, arg.StudentID, arg.ScheduleID, arg.Date)
+	var i Attendance
+	err := row.Scan(
+		&i.ID,
+		&i.StudentID,
+		&i.ScheduleID,
+		&i.Status,
+		&i.Date,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.UserLatitude,
+		&i.UserLongitude,
+		&i.DistanceMeters,
+		&i.MaxDistanceMeters,
+	)
+	return i, err
+}
+
 const updateAttendance = `-- name: UpdateAttendance :one
 UPDATE attendance
 SET
