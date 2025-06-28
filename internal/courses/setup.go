@@ -13,7 +13,7 @@ func Setup(api fiber.Router, db *db.Queries, authHandler *application.Handler) *
 	authMiddleware := sharedMiddleware.NewAuthMiddleware(authHandler.GetUseCase().ValidateAccessToken)
 	
 	// Admin and teacher routes
-	courses := api.Group("/courses", authMiddleware.Authenticate(), authMiddleware.RequireTeacherOrAdmin())
+	courses := api.Group("/courses", authMiddleware.Authenticate(), authMiddleware.RequireAnyRole("admin", "teacher", "student"))
 
 	coursesRepository := coursesRepo.NewPostgresRepository(db)
 	coursesUseCase := coursesApp.NewUseCase(coursesRepository)
