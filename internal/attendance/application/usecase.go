@@ -8,12 +8,16 @@ import (
 )
 
 type UseCase struct {
-	repository domain.Repository
+	repository         domain.Repository
+	scheduleRepository domain.ScheduleRepository
+	classroomRepository domain.ClassroomRepository
 }
 
-func NewUseCase(repository domain.Repository) *UseCase {
+func NewUseCase(repository domain.Repository, scheduleRepository domain.ScheduleRepository, classroomRepository domain.ClassroomRepository) *UseCase {
 	return &UseCase{
-		repository: repository,
+		repository:         repository,
+		scheduleRepository: scheduleRepository,
+		classroomRepository: classroomRepository,
 	}
 }
 
@@ -31,19 +35,34 @@ func (uc *UseCase) CreateAttendanceWithLocation(
 	status domain.AttendanceStatus, 
 	date time.Time,
 	userLatitude, userLongitude *float64,
-	maxDistanceMeters *int,
 ) (*domain.Attendance, error) {
 	attendance := domain.NewAttendance(studentID, classScheduleID, status, date)
 	
-	// Set max distance if provided
-	if maxDistanceMeters != nil {
-		attendance.MaxDistanceMeters = *maxDistanceMeters
-	}
-	
-	// If location is provided, store it (distance validation will be done later)
+	// If location is provided, validate it against classroom location
 	if userLatitude != nil && userLongitude != nil {
 		attendance.UserLatitude = userLatitude
 		attendance.UserLongitude = userLongitude
+		
+		// Get schedule to find classroom ID
+		schedule, err := uc.scheduleRepository.GetByID(classScheduleID)
+		if err != nil {
+			return nil, err
+		}
+		
+		// Get classroom to get location coordinates
+		classroom, err := uc.classroomRepository.GetByID(schedule.ClassroomID)
+		if err != nil {
+			return nil, err
+		}
+		
+		// Calculate distance between user and classroom
+		distance := domain.CalculateDistance(*userLatitude, *userLongitude, classroom.LocationLat, classroom.LocationLng)
+		attendance.DistanceMeters = &distance
+		
+		// Check if user is within allowed distance
+		if !attendance.IsWithinDistance() {
+			return nil, domain.NewValidationError(domain.ErrDistanceTooFar)
+		}
 	}
 	
 	err := uc.repository.Create(attendance)

@@ -13,7 +13,7 @@ func Setup(api fiber.Router, db *db.Queries, authHandler *application.Handler) *
 	authMiddleware := sharedMiddleware.NewAuthMiddleware(authHandler.GetUseCase().ValidateAccessToken)
 	
 	// Teacher routes only
-	qrcodes := api.Group("/qrcodes", authMiddleware.Authenticate(), authMiddleware.RequireTeacher())
+	qrcodes := api.Group("/qrcodes", authMiddleware.Authenticate(), authMiddleware.RequireAnyRole("admin", "teacher", "student"))
 
 	qrcodeRepository := qrcodeRepo.NewPostgresRepository(db)
 	qrcodeUseCase := qrcodeApp.NewUseCase(qrcodeRepository)

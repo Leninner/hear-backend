@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -69,6 +70,7 @@ func (a *Attendance) IsWithinDistance() bool {
 	if a.DistanceMeters == nil {
 		return false
 	}
+	fmt.Println(*a.DistanceMeters, a.MaxDistanceMeters)
 	return *a.DistanceMeters <= float64(a.MaxDistanceMeters)
 }
 
@@ -80,4 +82,27 @@ type Repository interface {
 	GetByDate(date time.Time) ([]*Attendance, error)
 	Update(attendance *Attendance) error
 	Delete(id uuid.UUID) error
+}
+
+// ScheduleRepository interface for getting schedule information
+type ScheduleRepository interface {
+	GetByID(id uuid.UUID) (*Schedule, error)
+}
+
+// ClassroomRepository interface for getting classroom information
+type ClassroomRepository interface {
+	GetByID(id uuid.UUID) (*Classroom, error)
+}
+
+// Schedule represents a class schedule with classroom information
+type Schedule struct {
+	ID          uuid.UUID `json:"id"`
+	ClassroomID uuid.UUID `json:"classroomId"`
+}
+
+// Classroom represents a classroom with location information
+type Classroom struct {
+	ID          uuid.UUID `json:"id"`
+	LocationLat float64   `json:"locationLat"`
+	LocationLng float64   `json:"locationLng"`
 } 

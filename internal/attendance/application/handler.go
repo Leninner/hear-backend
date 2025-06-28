@@ -1,6 +1,7 @@
 package application
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -26,10 +27,10 @@ func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 		Date              time.Time           `json:"date"`
 		UserLatitude      *float64            `json:"userLatitude,omitempty"`
 		UserLongitude     *float64            `json:"userLongitude,omitempty"`
-		MaxDistanceMeters *int                `json:"maxDistanceMeters,omitempty"`
 	}
 
 	if err := c.BodyParser(&input); err != nil {
+		fmt.Println(err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Invalid input",
 		})
@@ -43,7 +44,6 @@ func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 		Date:              input.Date,
 		UserLatitude:      input.UserLatitude,
 		UserLongitude:     input.UserLongitude,
-		MaxDistanceMeters: input.MaxDistanceMeters,
 	}
 
 	if err := dto.Validate(); err != nil {
@@ -59,7 +59,6 @@ func (h *Handler) CreateAttendance(c *fiber.Ctx) error {
 		input.Date,
 		input.UserLatitude,
 		input.UserLongitude,
-		input.MaxDistanceMeters,
 	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
