@@ -73,4 +73,33 @@ SELECT
 FROM section_enrollments se
 JOIN users u ON se.student_id = u.id
 WHERE se.section_id = $1
-ORDER BY se.created_at; 
+ORDER BY se.created_at;
+
+-- name: GetCourseSectionsByStudentID :many
+SELECT cs.* FROM course_sections cs
+JOIN section_enrollments se ON cs.id = se.section_id
+WHERE se.student_id = $1;
+
+-- name: GetCourseSectionsWithSchedulesByStudentID :many
+SELECT 
+    cs.id,
+    cs.course_id,
+    cs.teacher_id,
+    cs.max_students,
+    cs.created_at,
+    cs.updated_at,
+    cs.name,
+    s.id as schedule_id,
+    s.course_id as schedule_course_id,
+    s.section_id as schedule_section_id,
+    s.classroom_id,
+    s.day_of_week,
+    s.start_time,
+    s.end_time,
+    s.created_at as schedule_created_at,
+    s.updated_at as schedule_updated_at
+FROM course_sections cs
+JOIN section_enrollments se ON cs.id = se.section_id
+LEFT JOIN schedules s ON cs.id = s.section_id
+WHERE se.student_id = $1
+ORDER BY cs.id, s.day_of_week, s.start_time; 

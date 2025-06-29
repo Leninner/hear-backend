@@ -143,6 +143,43 @@ func (q *Queries) GetCourseSectionsByCourseID(ctx context.Context, courseID uuid
 	return items, nil
 }
 
+const getCourseSectionsByStudentID = `-- name: GetCourseSectionsByStudentID :many
+SELECT cs.id, cs.course_id, cs.teacher_id, cs.max_students, cs.created_at, cs.updated_at, cs.name FROM course_sections cs
+JOIN section_enrollments se ON cs.id = se.section_id
+WHERE se.student_id = $1
+`
+
+func (q *Queries) GetCourseSectionsByStudentID(ctx context.Context, studentID uuid.UUID) ([]CourseSection, error) {
+	rows, err := q.query(ctx, q.getCourseSectionsByStudentIDStmt, getCourseSectionsByStudentID, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CourseSection{}
+	for rows.Next() {
+		var i CourseSection
+		if err := rows.Scan(
+			&i.ID,
+			&i.CourseID,
+			&i.TeacherID,
+			&i.MaxStudents,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getCourseSectionsByTeacherID = `-- name: GetCourseSectionsByTeacherID :many
 SELECT id, course_id, teacher_id, max_students, created_at, updated_at, name FROM course_sections
 WHERE teacher_id = $1
@@ -165,6 +202,90 @@ func (q *Queries) GetCourseSectionsByTeacherID(ctx context.Context, teacherID uu
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCourseSectionsWithSchedulesByStudentID = `-- name: GetCourseSectionsWithSchedulesByStudentID :many
+SELECT 
+    cs.id,
+    cs.course_id,
+    cs.teacher_id,
+    cs.max_students,
+    cs.created_at,
+    cs.updated_at,
+    cs.name,
+    s.id as schedule_id,
+    s.course_id as schedule_course_id,
+    s.section_id as schedule_section_id,
+    s.classroom_id,
+    s.day_of_week,
+    s.start_time,
+    s.end_time,
+    s.created_at as schedule_created_at,
+    s.updated_at as schedule_updated_at
+FROM course_sections cs
+JOIN section_enrollments se ON cs.id = se.section_id
+LEFT JOIN schedules s ON cs.id = s.section_id
+WHERE se.student_id = $1
+ORDER BY cs.id, s.day_of_week, s.start_time
+`
+
+type GetCourseSectionsWithSchedulesByStudentIDRow struct {
+	ID                uuid.UUID     `json:"id"`
+	CourseID          uuid.UUID     `json:"course_id"`
+	TeacherID         uuid.UUID     `json:"teacher_id"`
+	MaxStudents       int32         `json:"max_students"`
+	CreatedAt         sql.NullTime  `json:"created_at"`
+	UpdatedAt         sql.NullTime  `json:"updated_at"`
+	Name              string        `json:"name"`
+	ScheduleID        uuid.NullUUID `json:"schedule_id"`
+	ScheduleCourseID  uuid.NullUUID `json:"schedule_course_id"`
+	ScheduleSectionID uuid.NullUUID `json:"schedule_section_id"`
+	ClassroomID       uuid.NullUUID `json:"classroom_id"`
+	DayOfWeek         sql.NullInt32 `json:"day_of_week"`
+	StartTime         sql.NullTime  `json:"start_time"`
+	EndTime           sql.NullTime  `json:"end_time"`
+	ScheduleCreatedAt sql.NullTime  `json:"schedule_created_at"`
+	ScheduleUpdatedAt sql.NullTime  `json:"schedule_updated_at"`
+}
+
+func (q *Queries) GetCourseSectionsWithSchedulesByStudentID(ctx context.Context, studentID uuid.UUID) ([]GetCourseSectionsWithSchedulesByStudentIDRow, error) {
+	rows, err := q.query(ctx, q.getCourseSectionsWithSchedulesByStudentIDStmt, getCourseSectionsWithSchedulesByStudentID, studentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetCourseSectionsWithSchedulesByStudentIDRow{}
+	for rows.Next() {
+		var i GetCourseSectionsWithSchedulesByStudentIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CourseID,
+			&i.TeacherID,
+			&i.MaxStudents,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.ScheduleID,
+			&i.ScheduleCourseID,
+			&i.ScheduleSectionID,
+			&i.ClassroomID,
+			&i.DayOfWeek,
+			&i.StartTime,
+			&i.EndTime,
+			&i.ScheduleCreatedAt,
+			&i.ScheduleUpdatedAt,
 		); err != nil {
 			return nil, err
 		}

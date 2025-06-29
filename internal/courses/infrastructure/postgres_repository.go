@@ -300,6 +300,100 @@ func (r *PostgresRepository) GetSectionsByTeacherID(teacherID uuid.UUID) ([]*dom
 	return domainSections, nil
 }
 
+func (r *PostgresRepository) GetSectionsByStudentID(studentID uuid.UUID) ([]*domain.CourseSection, error) {
+	ctx := context.Background()
+
+	sections, err := r.queries.GetCourseSectionsByStudentID(ctx, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	var domainSections []*domain.CourseSection
+	for _, section := range sections {
+		domainSection := &domain.CourseSection{
+			ID:          section.ID,
+			CourseID:    section.CourseID,
+			Name:        section.Name,
+			TeacherID:   section.TeacherID,
+			MaxStudents: int(section.MaxStudents),
+		}
+		if section.CreatedAt.Valid {
+			domainSection.CreatedAt = section.CreatedAt.Time
+		}
+		if section.UpdatedAt.Valid {
+			domainSection.UpdatedAt = section.UpdatedAt.Time
+		}
+		domainSections = append(domainSections, domainSection)
+	}
+
+	return domainSections, nil
+}
+
+func (r *PostgresRepository) GetSectionsWithSchedulesByStudentID(studentID uuid.UUID) ([]*domain.CourseSectionWithSchedules, error) {
+	ctx := context.Background()
+
+	// Get sections with schedules by student ID
+	rows, err := r.queries.GetCourseSectionsWithSchedulesByStudentID(ctx, studentID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Group sections and their schedules
+	sectionsMap := make(map[uuid.UUID]*domain.CourseSectionWithSchedules)
+	
+	for _, row := range rows {
+		sectionID := row.ID
+		
+		// Create or get existing section
+		sectionWithSchedules, exists := sectionsMap[sectionID]
+		if !exists {
+			domainSection := &domain.CourseSection{
+				ID:          row.ID,
+				CourseID:    row.CourseID,
+				Name:        row.Name,
+				TeacherID:   row.TeacherID,
+				MaxStudents: int(row.MaxStudents),
+			}
+			if row.CreatedAt.Valid {
+				domainSection.CreatedAt = row.CreatedAt.Time
+			}
+			if row.UpdatedAt.Valid {
+				domainSection.UpdatedAt = row.UpdatedAt.Time
+			}
+			
+			sectionWithSchedules = &domain.CourseSectionWithSchedules{
+				CourseSection: domainSection,
+				Schedules:     []*domain.Schedule{},
+			}
+			sectionsMap[sectionID] = sectionWithSchedules
+		}
+		
+		// Add schedule if it exists (schedule_id is not null)
+		if row.ScheduleID.Valid {
+			domainSchedule := &domain.Schedule{
+				ID:          row.ScheduleID.UUID.String(),
+				CourseID:    row.ScheduleCourseID.UUID.String(),
+				SectionID:   row.ScheduleSectionID.UUID.String(),
+				ClassroomID: row.ClassroomID.UUID.String(),
+				DayOfWeek:   int(row.DayOfWeek.Int32),
+				StartTime:   row.StartTime.Time.Format("15:04"),
+				EndTime:     row.EndTime.Time.Format("15:04"),
+				CreatedAt:   row.ScheduleCreatedAt.Time.Format("2006-01-02T15:04:05Z"),
+				UpdatedAt:   row.ScheduleUpdatedAt.Time.Format("2006-01-02T15:04:05Z"),
+			}
+			sectionWithSchedules.Schedules = append(sectionWithSchedules.Schedules, domainSchedule)
+		}
+	}
+	
+	// Convert map to slice
+	var result []*domain.CourseSectionWithSchedules
+	for _, section := range sectionsMap {
+		result = append(result, section)
+	}
+	
+	return result, nil
+}
+
 func (r *PostgresRepository) UpdateSection(section *domain.CourseSection) error {
 	ctx := context.Background()
 

@@ -81,6 +81,8 @@ type Repository interface {
 	GetSectionByID(id uuid.UUID) (*CourseSection, error)
 	GetSectionsByCourseID(courseID uuid.UUID) ([]*CourseSection, error)
 	GetSectionsByTeacherID(teacherID uuid.UUID) ([]*CourseSection, error)
+	GetSectionsByStudentID(studentID uuid.UUID) ([]*CourseSection, error)
+	GetSectionsWithSchedulesByStudentID(studentID uuid.UUID) ([]*CourseSectionWithSchedules, error)
 	UpdateSection(section *CourseSection) error
 	DeleteSection(id uuid.UUID) error
 	

@@ -138,8 +138,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getCourseSectionsByCourseIDStmt, err = db.PrepareContext(ctx, getCourseSectionsByCourseID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCourseSectionsByCourseID: %w", err)
 	}
+	if q.getCourseSectionsByStudentIDStmt, err = db.PrepareContext(ctx, getCourseSectionsByStudentID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetCourseSectionsByStudentID: %w", err)
+	}
 	if q.getCourseSectionsByTeacherIDStmt, err = db.PrepareContext(ctx, getCourseSectionsByTeacherID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCourseSectionsByTeacherID: %w", err)
+	}
+	if q.getCourseSectionsWithSchedulesByStudentIDStmt, err = db.PrepareContext(ctx, getCourseSectionsWithSchedulesByStudentID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetCourseSectionsWithSchedulesByStudentID: %w", err)
 	}
 	if q.getCoursesByFacultyIDStmt, err = db.PrepareContext(ctx, getCoursesByFacultyID); err != nil {
 		return nil, fmt.Errorf("error preparing query GetCoursesByFacultyID: %w", err)
@@ -441,9 +447,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getCourseSectionsByCourseIDStmt: %w", cerr)
 		}
 	}
+	if q.getCourseSectionsByStudentIDStmt != nil {
+		if cerr := q.getCourseSectionsByStudentIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCourseSectionsByStudentIDStmt: %w", cerr)
+		}
+	}
 	if q.getCourseSectionsByTeacherIDStmt != nil {
 		if cerr := q.getCourseSectionsByTeacherIDStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getCourseSectionsByTeacherIDStmt: %w", cerr)
+		}
+	}
+	if q.getCourseSectionsWithSchedulesByStudentIDStmt != nil {
+		if cerr := q.getCourseSectionsWithSchedulesByStudentIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getCourseSectionsWithSchedulesByStudentIDStmt: %w", cerr)
 		}
 	}
 	if q.getCoursesByFacultyIDStmt != nil {
@@ -658,161 +674,165 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db                                        DBTX
-	tx                                        *sql.Tx
-	cleanExpiredTokensStmt                    *sql.Stmt
-	createAttendanceStmt                      *sql.Stmt
-	createClassroomStmt                       *sql.Stmt
-	createCourseStmt                          *sql.Stmt
-	createCourseSectionStmt                   *sql.Stmt
-	createFacultyStmt                         *sql.Stmt
-	createQRCodeStmt                          *sql.Stmt
-	createRefreshTokenStmt                    *sql.Stmt
-	createScheduleStmt                        *sql.Stmt
-	createUniversityStmt                      *sql.Stmt
-	createUserStmt                            *sql.Stmt
-	deleteClassroomStmt                       *sql.Stmt
-	deleteCourseStmt                          *sql.Stmt
-	deleteCourseSectionStmt                   *sql.Stmt
-	deleteFacultyStmt                         *sql.Stmt
-	deleteQRCodeStmt                          *sql.Stmt
-	deleteRefreshTokenStmt                    *sql.Stmt
-	deleteScheduleStmt                        *sql.Stmt
-	deleteUniversityStmt                      *sql.Stmt
-	deleteUserStmt                            *sql.Stmt
-	deleteUserRefreshTokensStmt               *sql.Stmt
-	enrollStudentStmt                         *sql.Stmt
-	getActiveQRCodeByCourseSectionIDStmt      *sql.Stmt
-	getAllStmt                                *sql.Stmt
-	getAllCoursesStmt                         *sql.Stmt
-	getAttendanceByDateStmt                   *sql.Stmt
-	getAttendanceByIDStmt                     *sql.Stmt
-	getAttendanceByScheduleIDStmt             *sql.Stmt
-	getAttendanceByStudentIDStmt              *sql.Stmt
-	getAttendanceByStudentScheduleAndDateStmt *sql.Stmt
-	getClassroomByIDStmt                      *sql.Stmt
-	getClassroomByNameStmt                    *sql.Stmt
-	getClassroomsByBuildingStmt               *sql.Stmt
-	getClassroomsByCapacityStmt               *sql.Stmt
-	getClassroomsByFacultyIDStmt              *sql.Stmt
-	getCourseByIDStmt                         *sql.Stmt
-	getCourseSectionByIDStmt                  *sql.Stmt
-	getCourseSectionsByCourseIDStmt           *sql.Stmt
-	getCourseSectionsByTeacherIDStmt          *sql.Stmt
-	getCoursesByFacultyIDStmt                 *sql.Stmt
-	getCoursesBySemesterStmt                  *sql.Stmt
-	getEnrollmentCountStmt                    *sql.Stmt
-	getEnrollmentsWithDetailsBySectionStmt    *sql.Stmt
-	getFacultiesByUniversityIDStmt            *sql.Stmt
-	getFacultyByIDStmt                        *sql.Stmt
-	getFacultyByNameStmt                      *sql.Stmt
-	getNearbyClassroomsStmt                   *sql.Stmt
-	getQRCodeByCodeStmt                       *sql.Stmt
-	getQRCodeByIDStmt                         *sql.Stmt
-	getQRCodesByCourseSectionIDStmt           *sql.Stmt
-	getRefreshTokenStmt                       *sql.Stmt
-	getScheduleByIDStmt                       *sql.Stmt
-	getSchedulesByClassroomAndTimeStmt        *sql.Stmt
-	getSchedulesByClassroomIDStmt             *sql.Stmt
-	getSchedulesByCourseIDStmt                *sql.Stmt
-	getSchedulesBySectionIDStmt               *sql.Stmt
-	getUniversityByIDStmt                     *sql.Stmt
-	getUniversityByNameStmt                   *sql.Stmt
-	getUserByEmailStmt                        *sql.Stmt
-	getUserByIDStmt                           *sql.Stmt
-	isStudentEnrolledStmt                     *sql.Stmt
-	listFacultiesStmt                         *sql.Stmt
-	listUniversitiesStmt                      *sql.Stmt
-	listUsersStmt                             *sql.Stmt
-	unenrollStudentStmt                       *sql.Stmt
-	updateAttendanceStmt                      *sql.Stmt
-	updateClassroomStmt                       *sql.Stmt
-	updateCourseStmt                          *sql.Stmt
-	updateCourseSectionStmt                   *sql.Stmt
-	updateFacultyStmt                         *sql.Stmt
-	updateQRCodeStmt                          *sql.Stmt
-	updateScheduleStmt                        *sql.Stmt
-	updateUniversityStmt                      *sql.Stmt
-	updateUserStmt                            *sql.Stmt
+	db                                            DBTX
+	tx                                            *sql.Tx
+	cleanExpiredTokensStmt                        *sql.Stmt
+	createAttendanceStmt                          *sql.Stmt
+	createClassroomStmt                           *sql.Stmt
+	createCourseStmt                              *sql.Stmt
+	createCourseSectionStmt                       *sql.Stmt
+	createFacultyStmt                             *sql.Stmt
+	createQRCodeStmt                              *sql.Stmt
+	createRefreshTokenStmt                        *sql.Stmt
+	createScheduleStmt                            *sql.Stmt
+	createUniversityStmt                          *sql.Stmt
+	createUserStmt                                *sql.Stmt
+	deleteClassroomStmt                           *sql.Stmt
+	deleteCourseStmt                              *sql.Stmt
+	deleteCourseSectionStmt                       *sql.Stmt
+	deleteFacultyStmt                             *sql.Stmt
+	deleteQRCodeStmt                              *sql.Stmt
+	deleteRefreshTokenStmt                        *sql.Stmt
+	deleteScheduleStmt                            *sql.Stmt
+	deleteUniversityStmt                          *sql.Stmt
+	deleteUserStmt                                *sql.Stmt
+	deleteUserRefreshTokensStmt                   *sql.Stmt
+	enrollStudentStmt                             *sql.Stmt
+	getActiveQRCodeByCourseSectionIDStmt          *sql.Stmt
+	getAllStmt                                    *sql.Stmt
+	getAllCoursesStmt                             *sql.Stmt
+	getAttendanceByDateStmt                       *sql.Stmt
+	getAttendanceByIDStmt                         *sql.Stmt
+	getAttendanceByScheduleIDStmt                 *sql.Stmt
+	getAttendanceByStudentIDStmt                  *sql.Stmt
+	getAttendanceByStudentScheduleAndDateStmt     *sql.Stmt
+	getClassroomByIDStmt                          *sql.Stmt
+	getClassroomByNameStmt                        *sql.Stmt
+	getClassroomsByBuildingStmt                   *sql.Stmt
+	getClassroomsByCapacityStmt                   *sql.Stmt
+	getClassroomsByFacultyIDStmt                  *sql.Stmt
+	getCourseByIDStmt                             *sql.Stmt
+	getCourseSectionByIDStmt                      *sql.Stmt
+	getCourseSectionsByCourseIDStmt               *sql.Stmt
+	getCourseSectionsByStudentIDStmt              *sql.Stmt
+	getCourseSectionsByTeacherIDStmt              *sql.Stmt
+	getCourseSectionsWithSchedulesByStudentIDStmt *sql.Stmt
+	getCoursesByFacultyIDStmt                     *sql.Stmt
+	getCoursesBySemesterStmt                      *sql.Stmt
+	getEnrollmentCountStmt                        *sql.Stmt
+	getEnrollmentsWithDetailsBySectionStmt        *sql.Stmt
+	getFacultiesByUniversityIDStmt                *sql.Stmt
+	getFacultyByIDStmt                            *sql.Stmt
+	getFacultyByNameStmt                          *sql.Stmt
+	getNearbyClassroomsStmt                       *sql.Stmt
+	getQRCodeByCodeStmt                           *sql.Stmt
+	getQRCodeByIDStmt                             *sql.Stmt
+	getQRCodesByCourseSectionIDStmt               *sql.Stmt
+	getRefreshTokenStmt                           *sql.Stmt
+	getScheduleByIDStmt                           *sql.Stmt
+	getSchedulesByClassroomAndTimeStmt            *sql.Stmt
+	getSchedulesByClassroomIDStmt                 *sql.Stmt
+	getSchedulesByCourseIDStmt                    *sql.Stmt
+	getSchedulesBySectionIDStmt                   *sql.Stmt
+	getUniversityByIDStmt                         *sql.Stmt
+	getUniversityByNameStmt                       *sql.Stmt
+	getUserByEmailStmt                            *sql.Stmt
+	getUserByIDStmt                               *sql.Stmt
+	isStudentEnrolledStmt                         *sql.Stmt
+	listFacultiesStmt                             *sql.Stmt
+	listUniversitiesStmt                          *sql.Stmt
+	listUsersStmt                                 *sql.Stmt
+	unenrollStudentStmt                           *sql.Stmt
+	updateAttendanceStmt                          *sql.Stmt
+	updateClassroomStmt                           *sql.Stmt
+	updateCourseStmt                              *sql.Stmt
+	updateCourseSectionStmt                       *sql.Stmt
+	updateFacultyStmt                             *sql.Stmt
+	updateQRCodeStmt                              *sql.Stmt
+	updateScheduleStmt                            *sql.Stmt
+	updateUniversityStmt                          *sql.Stmt
+	updateUserStmt                                *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:                                        tx,
-		tx:                                        tx,
-		cleanExpiredTokensStmt:                    q.cleanExpiredTokensStmt,
-		createAttendanceStmt:                      q.createAttendanceStmt,
-		createClassroomStmt:                       q.createClassroomStmt,
-		createCourseStmt:                          q.createCourseStmt,
-		createCourseSectionStmt:                   q.createCourseSectionStmt,
-		createFacultyStmt:                         q.createFacultyStmt,
-		createQRCodeStmt:                          q.createQRCodeStmt,
-		createRefreshTokenStmt:                    q.createRefreshTokenStmt,
-		createScheduleStmt:                        q.createScheduleStmt,
-		createUniversityStmt:                      q.createUniversityStmt,
-		createUserStmt:                            q.createUserStmt,
-		deleteClassroomStmt:                       q.deleteClassroomStmt,
-		deleteCourseStmt:                          q.deleteCourseStmt,
-		deleteCourseSectionStmt:                   q.deleteCourseSectionStmt,
-		deleteFacultyStmt:                         q.deleteFacultyStmt,
-		deleteQRCodeStmt:                          q.deleteQRCodeStmt,
-		deleteRefreshTokenStmt:                    q.deleteRefreshTokenStmt,
-		deleteScheduleStmt:                        q.deleteScheduleStmt,
-		deleteUniversityStmt:                      q.deleteUniversityStmt,
-		deleteUserStmt:                            q.deleteUserStmt,
-		deleteUserRefreshTokensStmt:               q.deleteUserRefreshTokensStmt,
-		enrollStudentStmt:                         q.enrollStudentStmt,
-		getActiveQRCodeByCourseSectionIDStmt:      q.getActiveQRCodeByCourseSectionIDStmt,
-		getAllStmt:                                q.getAllStmt,
-		getAllCoursesStmt:                         q.getAllCoursesStmt,
-		getAttendanceByDateStmt:                   q.getAttendanceByDateStmt,
-		getAttendanceByIDStmt:                     q.getAttendanceByIDStmt,
-		getAttendanceByScheduleIDStmt:             q.getAttendanceByScheduleIDStmt,
-		getAttendanceByStudentIDStmt:              q.getAttendanceByStudentIDStmt,
-		getAttendanceByStudentScheduleAndDateStmt: q.getAttendanceByStudentScheduleAndDateStmt,
-		getClassroomByIDStmt:                      q.getClassroomByIDStmt,
-		getClassroomByNameStmt:                    q.getClassroomByNameStmt,
-		getClassroomsByBuildingStmt:               q.getClassroomsByBuildingStmt,
-		getClassroomsByCapacityStmt:               q.getClassroomsByCapacityStmt,
-		getClassroomsByFacultyIDStmt:              q.getClassroomsByFacultyIDStmt,
-		getCourseByIDStmt:                         q.getCourseByIDStmt,
-		getCourseSectionByIDStmt:                  q.getCourseSectionByIDStmt,
-		getCourseSectionsByCourseIDStmt:           q.getCourseSectionsByCourseIDStmt,
-		getCourseSectionsByTeacherIDStmt:          q.getCourseSectionsByTeacherIDStmt,
-		getCoursesByFacultyIDStmt:                 q.getCoursesByFacultyIDStmt,
-		getCoursesBySemesterStmt:                  q.getCoursesBySemesterStmt,
-		getEnrollmentCountStmt:                    q.getEnrollmentCountStmt,
-		getEnrollmentsWithDetailsBySectionStmt:    q.getEnrollmentsWithDetailsBySectionStmt,
-		getFacultiesByUniversityIDStmt:            q.getFacultiesByUniversityIDStmt,
-		getFacultyByIDStmt:                        q.getFacultyByIDStmt,
-		getFacultyByNameStmt:                      q.getFacultyByNameStmt,
-		getNearbyClassroomsStmt:                   q.getNearbyClassroomsStmt,
-		getQRCodeByCodeStmt:                       q.getQRCodeByCodeStmt,
-		getQRCodeByIDStmt:                         q.getQRCodeByIDStmt,
-		getQRCodesByCourseSectionIDStmt:           q.getQRCodesByCourseSectionIDStmt,
-		getRefreshTokenStmt:                       q.getRefreshTokenStmt,
-		getScheduleByIDStmt:                       q.getScheduleByIDStmt,
-		getSchedulesByClassroomAndTimeStmt:        q.getSchedulesByClassroomAndTimeStmt,
-		getSchedulesByClassroomIDStmt:             q.getSchedulesByClassroomIDStmt,
-		getSchedulesByCourseIDStmt:                q.getSchedulesByCourseIDStmt,
-		getSchedulesBySectionIDStmt:               q.getSchedulesBySectionIDStmt,
-		getUniversityByIDStmt:                     q.getUniversityByIDStmt,
-		getUniversityByNameStmt:                   q.getUniversityByNameStmt,
-		getUserByEmailStmt:                        q.getUserByEmailStmt,
-		getUserByIDStmt:                           q.getUserByIDStmt,
-		isStudentEnrolledStmt:                     q.isStudentEnrolledStmt,
-		listFacultiesStmt:                         q.listFacultiesStmt,
-		listUniversitiesStmt:                      q.listUniversitiesStmt,
-		listUsersStmt:                             q.listUsersStmt,
-		unenrollStudentStmt:                       q.unenrollStudentStmt,
-		updateAttendanceStmt:                      q.updateAttendanceStmt,
-		updateClassroomStmt:                       q.updateClassroomStmt,
-		updateCourseStmt:                          q.updateCourseStmt,
-		updateCourseSectionStmt:                   q.updateCourseSectionStmt,
-		updateFacultyStmt:                         q.updateFacultyStmt,
-		updateQRCodeStmt:                          q.updateQRCodeStmt,
-		updateScheduleStmt:                        q.updateScheduleStmt,
-		updateUniversityStmt:                      q.updateUniversityStmt,
-		updateUserStmt:                            q.updateUserStmt,
+		db:                                            tx,
+		tx:                                            tx,
+		cleanExpiredTokensStmt:                        q.cleanExpiredTokensStmt,
+		createAttendanceStmt:                          q.createAttendanceStmt,
+		createClassroomStmt:                           q.createClassroomStmt,
+		createCourseStmt:                              q.createCourseStmt,
+		createCourseSectionStmt:                       q.createCourseSectionStmt,
+		createFacultyStmt:                             q.createFacultyStmt,
+		createQRCodeStmt:                              q.createQRCodeStmt,
+		createRefreshTokenStmt:                        q.createRefreshTokenStmt,
+		createScheduleStmt:                            q.createScheduleStmt,
+		createUniversityStmt:                          q.createUniversityStmt,
+		createUserStmt:                                q.createUserStmt,
+		deleteClassroomStmt:                           q.deleteClassroomStmt,
+		deleteCourseStmt:                              q.deleteCourseStmt,
+		deleteCourseSectionStmt:                       q.deleteCourseSectionStmt,
+		deleteFacultyStmt:                             q.deleteFacultyStmt,
+		deleteQRCodeStmt:                              q.deleteQRCodeStmt,
+		deleteRefreshTokenStmt:                        q.deleteRefreshTokenStmt,
+		deleteScheduleStmt:                            q.deleteScheduleStmt,
+		deleteUniversityStmt:                          q.deleteUniversityStmt,
+		deleteUserStmt:                                q.deleteUserStmt,
+		deleteUserRefreshTokensStmt:                   q.deleteUserRefreshTokensStmt,
+		enrollStudentStmt:                             q.enrollStudentStmt,
+		getActiveQRCodeByCourseSectionIDStmt:          q.getActiveQRCodeByCourseSectionIDStmt,
+		getAllStmt:                                    q.getAllStmt,
+		getAllCoursesStmt:                             q.getAllCoursesStmt,
+		getAttendanceByDateStmt:                       q.getAttendanceByDateStmt,
+		getAttendanceByIDStmt:                         q.getAttendanceByIDStmt,
+		getAttendanceByScheduleIDStmt:                 q.getAttendanceByScheduleIDStmt,
+		getAttendanceByStudentIDStmt:                  q.getAttendanceByStudentIDStmt,
+		getAttendanceByStudentScheduleAndDateStmt:     q.getAttendanceByStudentScheduleAndDateStmt,
+		getClassroomByIDStmt:                          q.getClassroomByIDStmt,
+		getClassroomByNameStmt:                        q.getClassroomByNameStmt,
+		getClassroomsByBuildingStmt:                   q.getClassroomsByBuildingStmt,
+		getClassroomsByCapacityStmt:                   q.getClassroomsByCapacityStmt,
+		getClassroomsByFacultyIDStmt:                  q.getClassroomsByFacultyIDStmt,
+		getCourseByIDStmt:                             q.getCourseByIDStmt,
+		getCourseSectionByIDStmt:                      q.getCourseSectionByIDStmt,
+		getCourseSectionsByCourseIDStmt:               q.getCourseSectionsByCourseIDStmt,
+		getCourseSectionsByStudentIDStmt:              q.getCourseSectionsByStudentIDStmt,
+		getCourseSectionsByTeacherIDStmt:              q.getCourseSectionsByTeacherIDStmt,
+		getCourseSectionsWithSchedulesByStudentIDStmt: q.getCourseSectionsWithSchedulesByStudentIDStmt,
+		getCoursesByFacultyIDStmt:                     q.getCoursesByFacultyIDStmt,
+		getCoursesBySemesterStmt:                      q.getCoursesBySemesterStmt,
+		getEnrollmentCountStmt:                        q.getEnrollmentCountStmt,
+		getEnrollmentsWithDetailsBySectionStmt:        q.getEnrollmentsWithDetailsBySectionStmt,
+		getFacultiesByUniversityIDStmt:                q.getFacultiesByUniversityIDStmt,
+		getFacultyByIDStmt:                            q.getFacultyByIDStmt,
+		getFacultyByNameStmt:                          q.getFacultyByNameStmt,
+		getNearbyClassroomsStmt:                       q.getNearbyClassroomsStmt,
+		getQRCodeByCodeStmt:                           q.getQRCodeByCodeStmt,
+		getQRCodeByIDStmt:                             q.getQRCodeByIDStmt,
+		getQRCodesByCourseSectionIDStmt:               q.getQRCodesByCourseSectionIDStmt,
+		getRefreshTokenStmt:                           q.getRefreshTokenStmt,
+		getScheduleByIDStmt:                           q.getScheduleByIDStmt,
+		getSchedulesByClassroomAndTimeStmt:            q.getSchedulesByClassroomAndTimeStmt,
+		getSchedulesByClassroomIDStmt:                 q.getSchedulesByClassroomIDStmt,
+		getSchedulesByCourseIDStmt:                    q.getSchedulesByCourseIDStmt,
+		getSchedulesBySectionIDStmt:                   q.getSchedulesBySectionIDStmt,
+		getUniversityByIDStmt:                         q.getUniversityByIDStmt,
+		getUniversityByNameStmt:                       q.getUniversityByNameStmt,
+		getUserByEmailStmt:                            q.getUserByEmailStmt,
+		getUserByIDStmt:                               q.getUserByIDStmt,
+		isStudentEnrolledStmt:                         q.isStudentEnrolledStmt,
+		listFacultiesStmt:                             q.listFacultiesStmt,
+		listUniversitiesStmt:                          q.listUniversitiesStmt,
+		listUsersStmt:                                 q.listUsersStmt,
+		unenrollStudentStmt:                           q.unenrollStudentStmt,
+		updateAttendanceStmt:                          q.updateAttendanceStmt,
+		updateClassroomStmt:                           q.updateClassroomStmt,
+		updateCourseStmt:                              q.updateCourseStmt,
+		updateCourseSectionStmt:                       q.updateCourseSectionStmt,
+		updateFacultyStmt:                             q.updateFacultyStmt,
+		updateQRCodeStmt:                              q.updateQRCodeStmt,
+		updateScheduleStmt:                            q.updateScheduleStmt,
+		updateUniversityStmt:                          q.updateUniversityStmt,
+		updateUserStmt:                                q.updateUserStmt,
 	}
 }

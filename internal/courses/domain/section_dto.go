@@ -60,4 +60,21 @@ func (dto *UpdateCourseSectionDTO) Validate() error {
 	}
 
 	return nil
+}
+
+type CourseSectionWithSchedules struct {
+	*CourseSection `json:",inline"`
+	Schedules      []*Schedule `json:"schedules"`
+}
+
+type Schedule struct {
+	ID          string `json:"id"`
+	CourseID    string `json:"courseId"`
+	SectionID   string `json:"sectionId"`
+	ClassroomID string `json:"classroomId"`
+	DayOfWeek   int    `json:"dayOfWeek"`
+	StartTime   string `json:"startTime"`
+	EndTime     string `json:"endTime"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
 } 

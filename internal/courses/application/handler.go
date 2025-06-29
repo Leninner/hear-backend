@@ -235,6 +235,54 @@ func (h *Handler) GetSectionsByTeacher(c *fiber.Ctx) error {
 	return response.Success(c, "Teacher sections retrieved successfully", sections)
 }
 
+func (h *Handler) GetSectionsByStudent(c *fiber.Ctx) error {
+	studentID, err := uuid.Parse(c.Params("studentId"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid student ID format")
+	}
+
+	sections, err := h.useCase.GetSectionsByStudent(studentID)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve student sections")
+		}
+	}
+
+	return response.Success(c, "Student sections retrieved successfully", sections)
+}
+
+func (h *Handler) GetSectionsWithSchedulesByStudent(c *fiber.Ctx) error {
+	studentID, err := uuid.Parse(c.Params("studentId"))
+	if err != nil {
+		return response.Error(c, fiber.StatusBadRequest, "Invalid student ID format")
+	}
+
+	sections, err := h.useCase.GetSectionsWithSchedulesByStudent(studentID)
+	if err != nil {
+		switch e := err.(type) {
+		case *domain.DomainError:
+			switch e.Type {
+			case domain.ErrorTypeNotFound:
+				return response.Error(c, fiber.StatusNotFound, e.Message)
+			default:
+				return response.Error(c, fiber.StatusInternalServerError, "An unexpected error occurred")
+			}
+		default:
+			return response.Error(c, fiber.StatusInternalServerError, "Failed to retrieve student sections with schedules")
+		}
+	}
+
+	return response.Success(c, "Student sections with schedules retrieved successfully", sections)
+}
+
 func (h *Handler) UpdateSection(c *fiber.Ctx) error {
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {

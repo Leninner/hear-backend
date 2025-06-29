@@ -134,6 +134,22 @@ func (uc *UseCase) GetSectionsByTeacher(teacherID uuid.UUID) ([]*domain.CourseSe
 	return sections, nil
 }
 
+func (uc *UseCase) GetSectionsByStudent(studentID uuid.UUID) ([]*domain.CourseSection, error) {
+	sections, err := uc.repository.GetSectionsByStudentID(studentID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve student sections from database", err)
+	}
+	return sections, nil
+}
+
+func (uc *UseCase) GetSectionsWithSchedulesByStudent(studentID uuid.UUID) ([]*domain.CourseSectionWithSchedules, error) {
+	sections, err := uc.repository.GetSectionsWithSchedulesByStudentID(studentID)
+	if err != nil {
+		return nil, domain.NewInternalError("failed to retrieve student sections with schedules from database", err)
+	}
+	return sections, nil
+}
+
 func (uc *UseCase) UpdateSection(id uuid.UUID, dto *domain.UpdateCourseSectionDTO) error {
 	if err := dto.Validate(); err != nil {
 		return err
